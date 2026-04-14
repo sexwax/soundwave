@@ -113,3 +113,77 @@ h1, h2, h3, h4 {
 .pulse-rec {
   animation: pulse-rec 1s ease-in-out infinite;
 }
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0px;
+    --player-height: 72px;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  h1 { font-size: clamp(1.5rem, 4vw, 2rem); }
+  h2 { font-size: clamp(1.25rem, 3vw, 1.5rem); }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --font-body: 13px;
+  }
+}
+
+/* Mobile-first utility classes */
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .desktop-only {
+    display: block;
+  }
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block;
+  }
+
+  /* Mobile sidebar slide-in */
+  aside {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1002;
+    width: 280px;
+    max-width: 85vw;
+  }
+
+  aside.sidebar-open,
+  aside:has(.sidebar-open) {
+    transform: translateX(0);
+  }
+
+  /* Adjust main content on mobile */
+  main {
+    padding: 60px 16px 80px !important;
+  }
+
+  /* Mobile miniplayer compact */
+  .miniplayer {
+    padding: 0 8px !important;
+    height: 64px !important;
+  }
+
+  .miniplayer > div:last-child {
+    display: none;
+  }
+}

@@ -31,7 +31,7 @@ function AppInner() {
       }}
     >
       <TopBar />
-      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+      <div style={{ display: 'flex', flex: 1, minHeight: 0, position: 'relative' }}>
         <Sidebar />
         <main
           style={{

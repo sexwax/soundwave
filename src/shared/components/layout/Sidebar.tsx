@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useTheme } from '../../../app/providers/ThemeProvider';
+import { useState } from 'react';
 
 const NAV_ITEMS = [
   { path: '/', label: 'Player', icon: '🎵' },
@@ -10,21 +11,60 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const { theme, setTheme } = useTheme();
+  const [isOpen, setIsOpen] = useState(false);
   const themes = ['dark', 'light', 'neon'] as const;
 
   return (
-    <aside
-      style={{
-        width: 'var(--sidebar-width)',
-        background: 'var(--bg-surface)',
-        borderRight: '1px solid var(--border-subtle)',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '16px 0',
-        height: '100%',
-        flexShrink: 0,
-      }}
-    >
+    <>
+      {/* Mobile menu button */}
+      <button
+        className="mobile-only"
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          position: 'fixed',
+          top: 12,
+          left: 12,
+          zIndex: 1000,
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 8,
+          padding: '8px 12px',
+          color: 'var(--text-primary)',
+          cursor: 'pointer',
+        }}
+        aria-label="Menú"
+      >
+        ☰
+      </button>
+
+      {/* Overlay */}
+      {isOpen && (
+        <div
+          className="mobile-only"
+          onClick={() => setIsOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.6)',
+            zIndex: 1001,
+          }}
+        />
+      )}
+
+      <aside
+        style={{
+          width: 'var(--sidebar-width)',
+          background: 'var(--bg-surface)',
+          borderRight: '1px solid var(--border-subtle)',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '16px 0',
+          height: '100%',
+          flexShrink: 0,
+          position: 'relative',
+        }}
+        className={isOpen ? 'sidebar-open' : ''}
+      >
       {/* Logo */}
       <div style={{ padding: '0 20px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
         <h1 style={{
@@ -67,8 +107,8 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Theme selector */}
-      <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border-subtle)' }}>
+      {/* Theme selector - desktop only */}
+      <div className="desktop-only" style={{ padding: '12px 20px', borderTop: '1px solid var(--border-subtle)' }}>
         <div style={{ fontSize: 11, color: 'var(--text-disabled)', marginBottom: 8 }}>TEMA</div>
         <div style={{ display: 'flex', gap: 6 }}>
           {themes.map((t) => (
@@ -94,5 +134,6 @@ export function Sidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }

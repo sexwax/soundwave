@@ -44,8 +44,10 @@ export function StationCard({ station, onClick, index = 0 }: Props) {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.15, delay: index < 20 ? index * 0.03 : 0 }}
       style={{
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '10px 12px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: '8px 10px',
         background: isActive ? 'var(--bg-elevated)' : 'transparent',
         borderRadius: 'var(--radius-md)',
         border: `1px solid ${isActive ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
@@ -53,31 +55,39 @@ export function StationCard({ station, onClick, index = 0 }: Props) {
         transition: 'all 0.15s',
         marginBottom: 6,
       }}
+      className="station-card"
     >
       {/* Logo */}
-      <div style={{
-        width: 40, height: 40, borderRadius: 8, flexShrink: 0,
-        background: 'var(--bg-base)',
-        overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
+      <div
+        className="station-logo"
+        style={{
+          width: 36, height: 36, borderRadius: 6, flexShrink: 0,
+          background: 'var(--bg-base)',
+          overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
         {station.favicon ? (
           <img src={station.favicon} alt="" style={{ width: '100%', objectFit: 'contain' }}
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-        ) : <span>📻</span>}
+        ) : <span style={{ fontSize: 16 }}>📻</span>}
       </div>
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: 13, fontWeight: 600, color: isActive ? 'var(--accent-primary)' : 'var(--text-primary)',
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          fontSize: 'clamp(12px, 3vw, 13px)',
+          fontWeight: 600,
+          color: isActive ? 'var(--accent-primary)' : 'var(--text-primary)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
           fontFamily: 'var(--font-mono)',
         }}>
           {isActive && isPlaying && <span style={{ marginRight: 6 }}>▶</span>}
           {station.name}
         </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-          <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 }}>
+          <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>
             {flagEmoji(station.countrycode)} {station.country}
           </span>
           {station.bitrate > 0 && <Badge>{station.bitrate}kbps</Badge>}
@@ -90,9 +100,10 @@ export function StationCard({ station, onClick, index = 0 }: Props) {
         onClick={toggleFav}
         aria-label={fav ? 'Quitar favorito' : 'Añadir favorito'}
         style={{
-          background: 'none', border: 'none', cursor: 'pointer', fontSize: 18,
+          background: 'none', border: 'none', cursor: 'pointer', fontSize: 16,
           color: fav ? 'var(--accent-danger)' : 'var(--text-disabled)',
           flexShrink: 0,
+          padding: 4,
         }}
       >
         {fav ? '❤️' : '🤍'}
