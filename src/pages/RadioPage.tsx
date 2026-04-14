@@ -12,7 +12,7 @@ import { useRadioStore, type RadioStation } from '../modules/radio/store/radioSt
 import { useRadioBrowser } from '../modules/radio/hooks/useRadioBrowser';
 import { useStreamCheck } from '../modules/radio/hooks/useStreamCheck';
 import { radioBrowserApi } from '../modules/radio/services/radioBrowserApi';
-import { proxify } from '../shared/utils/corsProxy';
+import { proxify, proxyHttp } from '../shared/utils/corsProxy';
 import { Howl } from 'howler';
 import { getRadioHowl, setRadioHowl, stopRadio } from '../modules/radio/services/radioPlayer';
 import { usePlayerStore } from '../modules/player/store/playerStore';
@@ -61,11 +61,13 @@ export default function RadioPage() {
 
     radioBrowserApi.registerClick(station.stationuuid);
 
-    // Try proxy first in production, then direct URL
+    // Try URLs in order: proxy -> direct -> AllOrigins (for HTTP-only streams)
+    const isHttp = url.startsWith('http://');
     const tryUrls = [
-      proxify(url),
-      url,
-    ].filter((u, i, arr) => u !== arr[i - 1]); // dedupe if no proxy
+      proxify(url),           // 1. CORS proxy (Cloudflare Worker)
+      url,                    // 2. Direct URL
+      ...(isHttp ? [proxyHttp(url)] : []), // 3. AllOrigins for HTTP streams
+    ].filter((u, i, arr) => u !== arr[i - 1]); // dedupe if no proxy configured
 
     const tryPlay = (urls: string[], retries = 0) => {
       if (urls.length === 0) {
