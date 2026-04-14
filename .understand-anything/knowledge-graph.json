@@ -1,0 +1,3001 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "soundwave",
+    "languages": [
+      "css",
+      "html",
+      "javascript",
+      "json",
+      "markdown",
+      "typescript"
+    ],
+    "frameworks": [
+      "React",
+      "React Router",
+      "Zustand",
+      "Framer Motion",
+      "TanStack Virtual",
+      "Dexie.js",
+      "hls.js",
+      "Howler.js",
+      "Tailwind CSS",
+      "Vite",
+      "vite-plugin-pwa",
+      "Vitest",
+      "Playwright"
+    ],
+    "description": "Professional web music app with local file playback, internet radio streaming, audio recording, and favorites management built with React 19, TypeScript, and Vite.",
+    "analyzedAt": "2026-04-02T19:59:07.144Z",
+    "gitCommitHash": "NO_GIT"
+  },
+  "nodes": [
+    {
+      "id": "config:.env.example",
+      "type": "config",
+      "name": ".env.example",
+      "filePath": ".env.example",
+      "summary": "Environment variable template declaring the three required runtime variables: VITE_LASTFM_API_KEY (Last.fm API integration), VITE_CORS_PROXY_URL (Cloudflare Workers CORS proxy for radio-browser API), and VITE_APP_URL (canonical app URL). Developers copy this to .env.local and fill in real values.",
+      "tags": [
+        "env",
+        "configuration",
+        "lastfm",
+        "cors-proxy",
+        "pwa",
+        "secrets-template"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.npmrc",
+      "type": "config",
+      "name": ".npmrc",
+      "filePath": ".npmrc",
+      "summary": "npm configuration enabling legacy-peer-deps mode to bypass peer-dependency conflicts arising from React 19 adoption before the ecosystem has fully updated peer ranges.",
+      "tags": [
+        "npm",
+        "peer-deps",
+        "react-19",
+        "configuration"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:CLAUDE.md",
+      "type": "document",
+      "name": "CLAUDE.md",
+      "filePath": "CLAUDE.md",
+      "summary": "AI-assistant guidance document for Claude Code covering all dev commands (dev, build, lint, test, e2e), full architecture overview (module layout, Zustand state management, Howler.js audio pipeline, Dexie persistence, Tailwind theming, radio streaming, PWA/service-worker, path aliases, TypeScript strictness). Acts as the canonical onboarding spec for automated agents working in this repo.",
+      "tags": [
+        "claude-code",
+        "onboarding",
+        "architecture",
+        "commands",
+        "documentation",
+        "ai-guidance"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:config/plugins/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "config/plugins/index.ts",
+      "summary": "Barrel re-export module for Vite plugin factories. Re-exports reactPlugin, tailwindPlugin, and pwaPlugin from their respective sibling modules so vite.config.ts can import all three from a single path.",
+      "tags": [
+        "vite",
+        "plugins",
+        "barrel",
+        "typescript",
+        "build"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:config/plugins/pwa.ts",
+      "type": "file",
+      "name": "pwa.ts",
+      "filePath": "config/plugins/pwa.ts",
+      "summary": "Vite plugin factory that configures vite-plugin-pwa with autoUpdate service-worker registration, a full Web App Manifest (name SoundWave, theme #080b12, standalone display, 192/512px icons), and Workbox runtime caching rules including NetworkFirst for radio-browser API calls. Drives PWA installability and offline support.",
+      "tags": [
+        "pwa",
+        "vite-plugin-pwa",
+        "workbox",
+        "service-worker",
+        "manifest",
+        "offline",
+        "typescript"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:config/plugins/react.ts",
+      "type": "file",
+      "name": "react.ts",
+      "filePath": "config/plugins/react.ts",
+      "summary": "Thin Vite plugin factory wrapping @vitejs/plugin-react to enable React JSX transform, fast refresh (HMR), and Oxc-based compilation. Exported as reactPlugin() for consumption via the plugins barrel.",
+      "tags": [
+        "react",
+        "vite",
+        "hmr",
+        "jsx",
+        "typescript",
+        "build"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:config/plugins/tailwind.ts",
+      "type": "file",
+      "name": "tailwind.ts",
+      "filePath": "config/plugins/tailwind.ts",
+      "summary": "Thin Vite plugin factory wrapping @tailwindcss/vite to integrate Tailwind CSS 4 into the Vite build pipeline. Exported as tailwindPlugin() for consumption via the plugins barrel.",
+      "tags": [
+        "tailwind",
+        "css",
+        "vite",
+        "typescript",
+        "build"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-03-27-soundwave-optimization.md",
+      "type": "document",
+      "name": "2026-03-27-soundwave-optimization.md",
+      "filePath": "docs/superpowers/plans/2026-03-27-soundwave-optimization.md",
+      "summary": "Step-by-step agentic implementation plan for SoundWave optimisation work across three independent domains: Domain 1 fixes broken local audio playback (playerStore shuffle/repeat, useLocalFiles File object registration, useAudioEngine wiring, Equalizer preset state); Domain 2 repairs radio favorites playback and adds QR-code SharePanel and react-helmet-async meta tags; Domain 3 introduces Framer Motion page transitions and react-virtual list virtualisation. Uses checkbox syntax for agent task tracking.",
+      "tags": [
+        "plan",
+        "implementation",
+        "audio-engine",
+        "pwa",
+        "radio",
+        "animations",
+        "virtualisation",
+        "framer-motion",
+        "howler",
+        "zustand",
+        "superpowers"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/superpowers/specs/2026-03-27-soundwave-optimization-design.md",
+      "type": "document",
+      "name": "2026-03-27-soundwave-optimization-design.md",
+      "filePath": "docs/superpowers/specs/2026-03-27-soundwave-optimization-design.md",
+      "summary": "Technical design specification describing the problems and proposed solutions for all three optimisation domains. Domain 1: useAudioEngine is wired but never called; Domain 2: radio favorites broken, no sharing; Domain 3: framer-motion and react-virtual installed but unused. Specifies exact module changes, data structures (fileMap, playTrigger), and out-of-scope items.",
+      "tags": [
+        "spec",
+        "design",
+        "audio-engine",
+        "radio",
+        "framer-motion",
+        "react-virtual",
+        "zustand",
+        "superpowers"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:eslint.config.js",
+      "type": "config",
+      "name": "eslint.config.js",
+      "filePath": "eslint.config.js",
+      "summary": "Flat ESLint configuration using eslint/config defineConfig API. Applies @eslint/js recommended rules, typescript-eslint recommended rules, react-hooks rules, and react-refresh Vite rules to all .ts/.tsx files. Ignores the dist directory. Sets ecmaVersion 2020 and browser globals.",
+      "tags": [
+        "eslint",
+        "linting",
+        "typescript",
+        "react",
+        "code-quality",
+        "flat-config"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:index.html",
+      "type": "file",
+      "name": "index.html",
+      "filePath": "index.html",
+      "summary": "Vite entry HTML shell for SoundWave. Sets lang=es, UTF-8 charset, SVG favicon, viewport meta, theme-color #080b12, Open Graph title/description meta tags, and bootstraps the React app by loading /src/main.tsx as a module script into the #root div.",
+      "tags": [
+        "html",
+        "entry-point",
+        "pwa",
+        "open-graph",
+        "vite",
+        "spa"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "package.json",
+      "summary": "Project manifest for soundwave (ESM, v0.0.0). Scripts: dev (Vite), build (tsc -b then vite build), lint, preview, test (Vitest), test:ui, test:e2e (Playwright). Runtime deps include React 19, React Router 7, Zustand 5, Howler.js 2, Dexie 4, Framer Motion 12, hls.js, lamejs, music-metadata-browser, qrcode, react-helmet-async, @tanstack/react-virtual. Dev deps include Vite, TypeScript, Vitest, Playwright, Tailwind 4, vite-plugin-pwa, ESLint.",
+      "tags": [
+        "package",
+        "dependencies",
+        "scripts",
+        "react-19",
+        "zustand",
+        "howler",
+        "dexie",
+        "framer-motion",
+        "pwa",
+        "vitest",
+        "playwright"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "Standard Vite + React + TypeScript template README. Documents the two available plugin options (@vitejs/plugin-react with Oxc vs SWC), notes that the React Compiler is disabled due to build performance impact, and gives ESLint configuration expansion guidance. Does not yet reflect SoundWave-specific content.",
+      "tags": [
+        "readme",
+        "vite",
+        "react",
+        "typescript",
+        "template",
+        "documentation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/App.css",
+      "type": "file",
+      "name": "App.css",
+      "filePath": "src/App.css",
+      "summary": "CSS for the scaffolded Vite template demo component (counter button, hero section with 3D-transformed logo images, next-steps list, docs section). Uses CSS nesting and CSS custom properties from index.css. Likely a placeholder not used by the real SoundWave app.",
+      "tags": [
+        "css",
+        "template",
+        "demo",
+        "vite-scaffold",
+        "legacy"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/App.tsx",
+      "type": "file",
+      "name": "App.tsx",
+      "filePath": "src/App.tsx",
+      "summary": "Vite scaffold demo App component showing a counter, hero logos (React + Vite SVGs), and a next-steps section. Imports App.css and static assets. This is the template placeholder at src/App.tsx — the real application entry is at src/app/App.tsx (imported by src/main.tsx).",
+      "tags": [
+        "react",
+        "typescript",
+        "template",
+        "demo",
+        "vite-scaffold",
+        "placeholder"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/index.css",
+      "type": "file",
+      "name": "index.css",
+      "filePath": "src/index.css",
+      "summary": "Base CSS stylesheet from the Vite template providing CSS custom properties for the scaffold demo (text, bg, border, accent, font variables) with light/dark color scheme support. Applies font smoothing and baseline typography. Separate from the real app styles in src/styles/globals.css.",
+      "tags": [
+        "css",
+        "template",
+        "custom-properties",
+        "typography",
+        "dark-mode",
+        "vite-scaffold"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/main.tsx",
+      "type": "file",
+      "name": "main.tsx",
+      "filePath": "src/main.tsx",
+      "summary": "React application bootstrap entry point. Imports globals.css (Tailwind + design tokens), creates the React 18 root on #root, and renders the real App component from src/app/App.tsx inside StrictMode. This is the file referenced by index.html and wired into Vite's build.",
+      "tags": [
+        "react",
+        "entry-point",
+        "bootstrap",
+        "strict-mode",
+        "typescript"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/styles/globals.css",
+      "type": "file",
+      "name": "globals.css",
+      "filePath": "src/styles/globals.css",
+      "summary": "Primary application stylesheet importing Tailwind CSS 4 and Google Fonts (Syne 700/800, DM Mono 400/500, Lora 400/500). Defines the full SoundWave design-token system via CSS custom properties: dark-mode defaults (bg-base #080b12, accent-primary #00e5ff, accent-secondary #7c3aed), light-mode and high-contrast overrides, layout constants (player-height 80px, sidebar-width 240px), radius scale, font families. Also defines marquee-text animation and pulse-rec keyframes.",
+      "tags": [
+        "css",
+        "tailwind",
+        "design-tokens",
+        "dark-mode",
+        "typography",
+        "google-fonts",
+        "animations",
+        "custom-properties"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:tsconfig.app.json",
+      "type": "config",
+      "name": "tsconfig.app.json",
+      "filePath": "tsconfig.app.json",
+      "summary": "TypeScript compiler config for the src/ application code. Targets ES2023, uses bundler moduleResolution, enables react-jsx, strict mode, erasableSyntaxOnly, noFallthroughCasesInSwitch. Maps the @ path alias to ./src/*. Includes only the src directory. Contains JSON5 comments (parsed with relaxed parser).",
+      "tags": [
+        "typescript",
+        "tsconfig",
+        "strict",
+        "path-alias",
+        "bundler-mode",
+        "react-jsx"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "tsconfig.json",
+      "summary": "Root TypeScript project references config. Contains no direct compiler options — instead references tsconfig.app.json (for src/) and tsconfig.node.json (for vite.config.ts) enabling composite build mode via tsc -b.",
+      "tags": [
+        "typescript",
+        "tsconfig",
+        "project-references",
+        "composite"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:tsconfig.node.json",
+      "type": "config",
+      "name": "tsconfig.node.json",
+      "filePath": "tsconfig.node.json",
+      "summary": "TypeScript compiler config for Node.js build tooling (vite.config.ts). Targets ES2023, node lib, bundler moduleResolution, strict with noUnusedLocals/Parameters and noUncheckedSideEffectImports. Scoped to include only vite.config.ts.",
+      "tags": [
+        "typescript",
+        "tsconfig",
+        "node",
+        "vite-config",
+        "strict"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:vite.config.ts",
+      "type": "file",
+      "name": "vite.config.ts",
+      "filePath": "vite.config.ts",
+      "summary": "Vite build configuration. Composes reactPlugin(), tailwindPlugin(), and pwaPlugin() from the config/plugins barrel. Sets the @ path alias to /src. Configures Rollup to suppress eval warnings from the file-type transitive dependency (pulled in by music-metadata-browser).",
+      "tags": [
+        "vite",
+        "build",
+        "plugins",
+        "path-alias",
+        "rollup",
+        "typescript"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:vitest.config.ts",
+      "type": "file",
+      "name": "vitest.config.ts",
+      "filePath": "vitest.config.ts",
+      "summary": "Vitest test runner configuration. Uses @vitejs/plugin-react for JSX support, sets jsdom as the test environment, enables global test APIs (describe/it/expect), maps the @ alias to /src, and sets the test file include pattern to src/**/__tests__/**/*.test.ts(x).",
+      "tags": [
+        "vitest",
+        "testing",
+        "jsdom",
+        "react",
+        "typescript",
+        "path-alias"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/App.tsx",
+      "type": "file",
+      "label": "App.tsx",
+      "path": "src/app/App.tsx",
+      "language": "typescript",
+      "summary": "Root application component that composes all providers (ThemeProvider, AudioProvider, NotificationProvider) and the main layout shell (TopBar, Sidebar, MiniPlayer). The inner AppInner component bootstraps keyboard shortcuts, media session, the audio engine, and initial favorites load, then renders the AppRouter within the layout.",
+      "tags": [
+        "component",
+        "ui",
+        "entrypoint",
+        "layout"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 67,
+      "exportedSymbols": [
+        "App"
+      ],
+      "importCount": 11,
+      "name": "App.tsx"
+    },
+    {
+      "id": "file:src/app/providers/AudioProvider.tsx",
+      "type": "file",
+      "label": "AudioProvider.tsx",
+      "path": "src/app/providers/AudioProvider.tsx",
+      "language": "typescript",
+      "summary": "Critical infrastructure provider that owns the single Web Audio API context and its signal chain: MediaElementAudioSourceNode → masterGain (0.8) → 10-band peaking EQ (32 Hz – 16 kHz) → AnalyserNode (fftSize 2048) → destination. A WeakMap guards against duplicate createMediaElementSource() calls on pooled Howler elements. Exposes connectMediaElement() and all node references via useAudioContext().",
+      "tags": [
+        "provider",
+        "service",
+        "context",
+        "audio",
+        "web-audio"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 121,
+      "exportedSymbols": [
+        "AudioProvider",
+        "useAudioContext"
+      ],
+      "importCount": 0,
+      "name": "AudioProvider.tsx"
+    },
+    {
+      "id": "file:src/app/providers/NotificationProvider.tsx",
+      "type": "file",
+      "label": "NotificationProvider.tsx",
+      "path": "src/app/providers/NotificationProvider.tsx",
+      "language": "typescript",
+      "summary": "React context provider for transient toast notifications. Manages a list of typed toasts (info/success/warning/error) with 3.5-second auto-dismiss, rendered with Framer Motion slide-in/out animations in a fixed overlay. Exposes useNotifications() hook.",
+      "tags": [
+        "provider",
+        "service",
+        "context",
+        "ui",
+        "notification"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 91,
+      "exportedSymbols": [
+        "NotificationProvider",
+        "useNotifications"
+      ],
+      "importCount": 0,
+      "name": "NotificationProvider.tsx"
+    },
+    {
+      "id": "file:src/app/providers/ThemeProvider.tsx",
+      "type": "file",
+      "label": "ThemeProvider.tsx",
+      "path": "src/app/providers/ThemeProvider.tsx",
+      "language": "typescript",
+      "summary": "Manages the active UI theme (dark/light/neon) persisted to localStorage under 'sw-theme'. Applies the theme by setting data-theme on documentElement. Exposes useTheme() hook.",
+      "tags": [
+        "provider",
+        "service",
+        "context",
+        "theme"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 34,
+      "exportedSymbols": [
+        "ThemeProvider",
+        "useTheme"
+      ],
+      "importCount": 0,
+      "name": "ThemeProvider.tsx"
+    },
+    {
+      "id": "file:src/app/Router.tsx",
+      "type": "file",
+      "label": "Router.tsx",
+      "path": "src/app/Router.tsx",
+      "language": "typescript",
+      "summary": "Declares application routes using React Router v6 with lazy-loaded page components (PlayerPage, RadioPage, FavoritesPage, RecorderPage) wrapped in Suspense + AnimatePresence for animated transitions. Exports AppRouter.",
+      "tags": [
+        "routing",
+        "component",
+        "ui"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 34,
+      "exportedSymbols": [
+        "AppRouter"
+      ],
+      "importCount": 5,
+      "name": "Router.tsx"
+    },
+    {
+      "id": "file:src/modules/favorites/components/FavoritesList.tsx",
+      "type": "file",
+      "label": "FavoritesList.tsx",
+      "path": "src/modules/favorites/components/FavoritesList.tsx",
+      "language": "typescript",
+      "summary": "UI component displaying the user's favorited radio stations and recent play history (last 30 entries). Supports JSON and M3U export of favorites. Navigates to /station/:uuid on play. Uses useFavoritesStore for data.",
+      "tags": [
+        "component",
+        "ui",
+        "favorites"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 110,
+      "exportedSymbols": [
+        "FavoritesList"
+      ],
+      "importCount": 4,
+      "name": "FavoritesList.tsx"
+    },
+    {
+      "id": "file:src/modules/favorites/db/favoritesDb.ts",
+      "type": "file",
+      "label": "favoritesDb.ts",
+      "path": "src/modules/favorites/db/favoritesDb.ts",
+      "language": "typescript",
+      "summary": "Dexie (IndexedDB) database singleton 'SoundWaveDB' with four tables: favorites (radio stations with stationuuid index), collections (user-created groups), history (play events ordered by playedAt), and tracks (local audio files with unique filePath index). Exports the db singleton and all four table-row interfaces.",
+      "tags": [
+        "database",
+        "persistence",
+        "dexie",
+        "indexeddb"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 68,
+      "exportedSymbols": [
+        "db",
+        "FavoriteStation",
+        "Collection",
+        "PlayHistory",
+        "LocalTrack"
+      ],
+      "importCount": 0,
+      "name": "favoritesDb.ts"
+    },
+    {
+      "id": "file:src/modules/favorites/store/favoritesStore.ts",
+      "type": "file",
+      "label": "favoritesStore.ts",
+      "path": "src/modules/favorites/store/favoritesStore.ts",
+      "language": "typescript",
+      "summary": "Zustand store (with localStorage persistence for favorites array) wrapping Dexie async operations. Provides load() to hydrate collections+history, addFavorite/removeFavorite/isFavorite for station bookmarking (dedup guarded), and addHistory/addCollection/removeCollection. Favorites are persisted via zustand/persist; history and collections are loaded on demand from Dexie.",
+      "tags": [
+        "state",
+        "zustand",
+        "favorites",
+        "persistence"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 84,
+      "exportedSymbols": [
+        "useFavoritesStore"
+      ],
+      "importCount": 1,
+      "name": "favoritesStore.ts"
+    },
+    {
+      "id": "file:src/modules/player/components/Equalizer.tsx",
+      "type": "file",
+      "label": "Equalizer.tsx",
+      "path": "src/modules/player/components/Equalizer.tsx",
+      "language": "typescript",
+      "summary": "10-band graphic equalizer UI (32 Hz – 16 kHz). Reads eqNodes from AudioProvider context and applies gain values (-12 to +12 dB). Ships 7 built-in presets (Flat, Bass Boost, Treble Boost, Rock, Jazz, Pop, Classical). Each band has a vertical range slider with aria-label.",
+      "tags": [
+        "component",
+        "ui",
+        "audio",
+        "equalizer"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 81,
+      "exportedSymbols": [
+        "Equalizer"
+      ],
+      "importCount": 2,
+      "name": "Equalizer.tsx"
+    },
+    {
+      "id": "file:src/modules/player/components/LocalPlayer.tsx",
+      "type": "file",
+      "label": "LocalPlayer.tsx",
+      "path": "src/modules/player/components/LocalPlayer.tsx",
+      "language": "typescript",
+      "summary": "Primary local music player UI. Toolbar with open-folder, open-files, shuffle, and EQ toggle buttons. Embeds a Visualizer (bars/wave/circular modes), optional Equalizer panel, crossfade duration Slider, queue size indicator, and TrackList. Delegates file loading to useLocalFiles and playback state to usePlayerStore.",
+      "tags": [
+        "component",
+        "ui",
+        "player",
+        "audio"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 106,
+      "exportedSymbols": [
+        "LocalPlayer"
+      ],
+      "importCount": 7,
+      "name": "LocalPlayer.tsx"
+    },
+    {
+      "id": "file:src/modules/player/components/TrackList.tsx",
+      "type": "file",
+      "label": "TrackList.tsx",
+      "path": "src/modules/player/components/TrackList.tsx",
+      "language": "typescript",
+      "summary": "Virtualized track queue display using @tanstack/react-virtual (threshold: 100 tracks, row height: 52px). Renders TrackRow sub-components with active/playing highlights. Respects shuffle order by switching between queue and shuffledQueue. Supports keyboard activation (Enter key).",
+      "tags": [
+        "component",
+        "ui",
+        "player",
+        "virtualization"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 123,
+      "exportedSymbols": [
+        "TrackList"
+      ],
+      "importCount": 3,
+      "name": "TrackList.tsx"
+    },
+    {
+      "id": "file:src/modules/player/hooks/useAudioEngine.ts",
+      "type": "file",
+      "label": "useAudioEngine.ts",
+      "path": "src/modules/player/hooks/useAudioEngine.ts",
+      "language": "typescript",
+      "summary": "Core playback hook bridging Howler.js and the Web Audio graph. Maintains a module-scope fileMap (filePath → object URL). On track change, stops any active radio stream via stopRadio(), unloads the previous Howl, creates a new Howl (html5:true for streaming) with crossfade support, and routes the Howler audio element through AudioProvider.connectMediaElement(). Polls position every 200ms for crossfade fade-out. Exports registerFile, getFileUrl, and useAudioEngine.",
+      "tags": [
+        "hook",
+        "service",
+        "audio",
+        "howler",
+        "player"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 136,
+      "exportedSymbols": [
+        "registerFile",
+        "getFileUrl",
+        "useAudioEngine"
+      ],
+      "importCount": 3,
+      "name": "useAudioEngine.ts"
+    },
+    {
+      "id": "file:src/modules/player/hooks/useLocalFiles.ts",
+      "type": "file",
+      "label": "useLocalFiles.ts",
+      "path": "src/modules/player/hooks/useLocalFiles.ts",
+      "language": "typescript",
+      "summary": "Hook that handles local audio file ingestion via the File System Access API (showDirectoryPicker) or a traditional file input. Recursively scans directories for audio files (.mp3, .flac, .wav, .ogg, .opus, .aac, .m4a), parses metadata with music-metadata-browser, extracts cover art as object URLs, persists new tracks to the Dexie tracks table, and loads the resulting queue into playerStore.",
+      "tags": [
+        "hook",
+        "service",
+        "file-system",
+        "metadata",
+        "player"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 125,
+      "exportedSymbols": [
+        "useLocalFiles"
+      ],
+      "importCount": 3,
+      "name": "useLocalFiles.ts"
+    },
+    {
+      "id": "file:src/modules/player/store/playerStore.ts",
+      "type": "file",
+      "label": "playerStore.ts",
+      "path": "src/modules/player/store/playerStore.ts",
+      "language": "typescript",
+      "summary": "Zustand store managing all local playback state: queue, shuffledQueue (Fisher-Yates shuffled), currentIndex, isPlaying, volume, isMuted, balance, repeatMode (none/track/queue), crossfadeDuration, currentTime, duration, and a playTrigger counter for repeat-track. Provides nextTrack/prevTrack with repeat and shuffle logic. No persistence — state is transient per session.",
+      "tags": [
+        "state",
+        "zustand",
+        "player"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 98,
+      "exportedSymbols": [
+        "usePlayerStore",
+        "RepeatMode"
+      ],
+      "importCount": 1,
+      "name": "playerStore.ts"
+    },
+    {
+      "id": "file:src/modules/recorder/components/Recorder.tsx",
+      "type": "file",
+      "label": "Recorder.tsx",
+      "path": "src/modules/recorder/components/Recorder.tsx",
+      "language": "typescript",
+      "summary": "Full-featured audio recorder component supporting three capture sources: app audio (taps AudioProvider's AnalyserNode via MediaStreamDestinationNode), browser tab (getDisplayMedia with browser surface), and system window. Uses MediaRecorder at 192 kbps. Includes real-time VU metering via a secondary AudioContext, pause/resume, elapsed timer, and a session recordings list with save (File System Access API or download fallback) and delete actions.",
+      "tags": [
+        "component",
+        "ui",
+        "recorder",
+        "audio",
+        "media-recorder"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 309,
+      "exportedSymbols": [
+        "Recorder"
+      ],
+      "importCount": 6,
+      "name": "Recorder.tsx"
+    },
+    {
+      "id": "file:src/modules/recorder/components/VUMeter.tsx",
+      "type": "file",
+      "label": "VUMeter.tsx",
+      "path": "src/modules/recorder/components/VUMeter.tsx",
+      "language": "typescript",
+      "summary": "Canvas-based VU meter component. Divides the bar into 20 segments with colour zones: green (0-65%), yellow (65-85%), red (85-100%). Re-renders on every level change via useEffect. Accepts level (0-1), width, and height props.",
+      "tags": [
+        "component",
+        "ui",
+        "audio",
+        "visualization"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 44,
+      "exportedSymbols": [
+        "VUMeter"
+      ],
+      "importCount": 0,
+      "name": "VUMeter.tsx"
+    },
+    {
+      "id": "file:src/modules/recorder/store/recorderStore.ts",
+      "type": "file",
+      "label": "recorderStore.ts",
+      "path": "src/modules/recorder/store/recorderStore.ts",
+      "language": "typescript",
+      "summary": "Lightweight Zustand store for recorder UI state: status (idle/recording/paused/processing), source (app/tab/window), elapsed seconds, audio level (0-1), and an in-memory recordings list. No persistence — recordings live only for the browser session.",
+      "tags": [
+        "state",
+        "zustand",
+        "recorder"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 43,
+      "exportedSymbols": [
+        "useRecorderStore",
+        "RecorderSource",
+        "RecorderStatus"
+      ],
+      "importCount": 0,
+      "name": "recorderStore.ts"
+    },
+    {
+      "id": "file:src/__tests__/example.test.ts",
+      "type": "file",
+      "label": "example.test.ts",
+      "path": "src/__tests__/example.test.ts",
+      "language": "typescript",
+      "summary": "Minimal placeholder Vitest test file with a single trivial assertion (1+1===2). Serves as a project test scaffold.",
+      "tags": [
+        "test",
+        "vitest"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 8,
+      "exportedSymbols": [],
+      "importCount": 0,
+      "name": "example.test.ts"
+    },
+    {
+      "id": "function:src/app/providers/AudioProvider.tsx:AudioProvider",
+      "type": "function",
+      "label": "AudioProvider",
+      "path": "src/app/providers/AudioProvider.tsx",
+      "language": "typescript",
+      "summary": "React provider component that initialises the Web Audio context and full signal chain on mount, exposes connectMediaElement() via context, and tears down the AudioContext on unmount.",
+      "tags": [
+        "provider",
+        "audio",
+        "web-audio"
+      ],
+      "complexity": "moderate",
+      "lineStart": 21,
+      "lineEnd": 116,
+      "params": [
+        {
+          "name": "children",
+          "type": "ReactNode"
+        }
+      ],
+      "name": "AudioProvider"
+    },
+    {
+      "id": "function:src/app/providers/AudioProvider.tsx:useAudioContext",
+      "type": "function",
+      "label": "useAudioContext",
+      "path": "src/app/providers/AudioProvider.tsx",
+      "language": "typescript",
+      "summary": "Hook that returns the AudioContextValue from AudioCtx, providing access to audioContext, masterGainNode, analyserNode, eqNodes, and connectMediaElement.",
+      "tags": [
+        "hook",
+        "audio"
+      ],
+      "complexity": "moderate",
+      "lineStart": 118,
+      "lineEnd": 120,
+      "params": [],
+      "name": "useAudioContext"
+    },
+    {
+      "id": "function:src/app/providers/NotificationProvider.tsx:NotificationProvider",
+      "type": "function",
+      "label": "NotificationProvider",
+      "path": "src/app/providers/NotificationProvider.tsx",
+      "language": "typescript",
+      "summary": "Provider component managing transient toast state and rendering animated toast overlays.",
+      "tags": [
+        "provider",
+        "notification"
+      ],
+      "complexity": "moderate",
+      "lineStart": 22,
+      "lineEnd": 86,
+      "params": [
+        {
+          "name": "children",
+          "type": "ReactNode"
+        }
+      ],
+      "name": "NotificationProvider"
+    },
+    {
+      "id": "function:src/app/providers/ThemeProvider.tsx:ThemeProvider",
+      "type": "function",
+      "label": "ThemeProvider",
+      "path": "src/app/providers/ThemeProvider.tsx",
+      "language": "typescript",
+      "summary": "Provider that reads/writes theme preference from localStorage and applies it as a data-theme attribute on the root element.",
+      "tags": [
+        "provider",
+        "theme"
+      ],
+      "complexity": "moderate",
+      "lineStart": 12,
+      "lineEnd": 29,
+      "params": [
+        {
+          "name": "children",
+          "type": "ReactNode"
+        }
+      ],
+      "name": "ThemeProvider"
+    },
+    {
+      "id": "function:src/modules/favorites/store/favoritesStore.ts:useFavoritesStore",
+      "type": "function",
+      "label": "useFavoritesStore",
+      "path": "src/modules/favorites/store/favoritesStore.ts",
+      "language": "typescript",
+      "summary": "Zustand store factory (with localStorage persist) for favourites, collections, and history. Wraps Dexie async calls; favorites are stored in localStorage while collections and history are loaded from IndexedDB on demand.",
+      "tags": [
+        "state",
+        "zustand",
+        "favorites",
+        "hook"
+      ],
+      "complexity": "moderate",
+      "lineStart": 19,
+      "lineEnd": 77,
+      "params": [],
+      "name": "useFavoritesStore"
+    },
+    {
+      "id": "function:src/modules/player/hooks/useAudioEngine.ts:useAudioEngine",
+      "type": "function",
+      "label": "useAudioEngine",
+      "path": "src/modules/player/hooks/useAudioEngine.ts",
+      "language": "typescript",
+      "summary": "Main audio engine hook. Creates and manages a Howl instance per track, wires Howler's html5 audio element into the Web Audio chain, handles crossfade fade-in/out, and polls seek position at 200ms intervals.",
+      "tags": [
+        "hook",
+        "audio",
+        "howler",
+        "player"
+      ],
+      "complexity": "moderate",
+      "lineStart": 20,
+      "lineEnd": 135,
+      "params": [],
+      "name": "useAudioEngine"
+    },
+    {
+      "id": "function:src/modules/player/hooks/useAudioEngine.ts:registerFile",
+      "type": "function",
+      "label": "registerFile",
+      "path": "src/modules/player/hooks/useAudioEngine.ts",
+      "language": "typescript",
+      "summary": "Registers a File as an object URL in the module-level fileMap keyed by filePath. Skips if already registered.",
+      "tags": [
+        "utility",
+        "audio"
+      ],
+      "complexity": "moderate",
+      "lineStart": 10,
+      "lineEnd": 14,
+      "params": [
+        {
+          "name": "filePath",
+          "type": "string"
+        },
+        {
+          "name": "file",
+          "type": "File"
+        }
+      ],
+      "name": "registerFile"
+    },
+    {
+      "id": "function:src/modules/player/hooks/useLocalFiles.ts:useLocalFiles",
+      "type": "function",
+      "label": "useLocalFiles",
+      "path": "src/modules/player/hooks/useLocalFiles.ts",
+      "language": "typescript",
+      "summary": "Hook exposing openDirectory (File System Access API recursive scan) and openFiles (input[type=file]) methods that parse audio metadata and load the resulting track queue into playerStore.",
+      "tags": [
+        "hook",
+        "file-system",
+        "metadata",
+        "player"
+      ],
+      "complexity": "moderate",
+      "lineStart": 71,
+      "lineEnd": 124,
+      "params": [],
+      "name": "useLocalFiles"
+    },
+    {
+      "id": "function:src/modules/player/store/playerStore.ts:usePlayerStore",
+      "type": "function",
+      "label": "usePlayerStore",
+      "path": "src/modules/player/store/playerStore.ts",
+      "language": "typescript",
+      "summary": "Zustand store for all local player state and actions including queue management, shuffle (Fisher-Yates), repeat modes, crossfade duration, volume/mute, and next/prev track navigation.",
+      "tags": [
+        "state",
+        "zustand",
+        "player",
+        "hook"
+      ],
+      "complexity": "moderate",
+      "lineStart": 46,
+      "lineEnd": 97,
+      "params": [],
+      "name": "usePlayerStore"
+    },
+    {
+      "id": "function:src/modules/recorder/components/Recorder.tsx:Recorder",
+      "type": "function",
+      "label": "Recorder",
+      "path": "src/modules/recorder/components/Recorder.tsx",
+      "language": "typescript",
+      "summary": "Large recorder component managing the full recording lifecycle: source selection, MediaRecorder start/stop/pause/resume, real-time VU metering via a secondary AudioContext, elapsed timer, and session recordings list with file save.",
+      "tags": [
+        "component",
+        "recorder",
+        "audio",
+        "media-recorder"
+      ],
+      "complexity": "moderate",
+      "lineStart": 21,
+      "lineEnd": 308,
+      "params": [],
+      "name": "Recorder"
+    },
+    {
+      "id": "function:src/modules/recorder/store/recorderStore.ts:useRecorderStore",
+      "type": "function",
+      "label": "useRecorderStore",
+      "path": "src/modules/recorder/store/recorderStore.ts",
+      "language": "typescript",
+      "summary": "Zustand store for recorder UI state: status, source, elapsed time, audio level, and in-session recordings list.",
+      "tags": [
+        "state",
+        "zustand",
+        "recorder",
+        "hook"
+      ],
+      "complexity": "moderate",
+      "lineStart": 30,
+      "lineEnd": 42,
+      "params": [],
+      "name": "useRecorderStore"
+    },
+    {
+      "id": "class:src/modules/favorites/db/favoritesDb.ts:SoundWaveDB",
+      "type": "class",
+      "label": "SoundWaveDB",
+      "path": "src/modules/favorites/db/favoritesDb.ts",
+      "language": "typescript",
+      "summary": "Dexie subclass defining SoundWaveDB v1 schema with four IndexedDB object stores: favorites, collections, history, and tracks.",
+      "tags": [
+        "database",
+        "dexie",
+        "class"
+      ],
+      "complexity": "moderate",
+      "lineStart": 50,
+      "lineEnd": 65,
+      "params": [],
+      "name": "SoundWaveDB"
+    },
+    {
+      "id": "file:src/modules/radio/components/RadioSearch.tsx",
+      "type": "file",
+      "label": "RadioSearch.tsx",
+      "path": "src/modules/radio/components/RadioSearch.tsx",
+      "language": "typescript",
+      "summary": "Main radio search UI component. Renders a search form with a text input, a search button, a filter toggle, and a Top Stations shortcut. Delegates search execution to useRadioBrowser, reads query/filter/loading state from radioStore, and conditionally renders StationFilters. Tracks local hasSearched flag to show an empty-results message.",
+      "tags": [
+        "component",
+        "ui"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 63,
+      "exportedSymbols": [
+        "RadioSearch"
+      ],
+      "importCount": 5,
+      "name": "RadioSearch.tsx"
+    },
+    {
+      "id": "file:src/modules/radio/components/SharePanel.tsx",
+      "type": "file",
+      "label": "SharePanel.tsx",
+      "path": "src/modules/radio/components/SharePanel.tsx",
+      "language": "typescript",
+      "summary": "QR code share panel for a given RadioStation. Generates a station deep-link URL (VITE_APP_URL or window.location.origin + /station/:uuid), renders a QR code image via the qrcode library with neon-on-dark styling, shows a Spinner while generating, and provides a clipboard copy button with a 2-second confirmation flash.",
+      "tags": [
+        "component",
+        "ui"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 59,
+      "exportedSymbols": [
+        "SharePanel"
+      ],
+      "importCount": 3,
+      "name": "SharePanel.tsx"
+    },
+    {
+      "id": "file:src/modules/radio/components/StationCard.tsx",
+      "type": "file",
+      "label": "StationCard.tsx",
+      "path": "src/modules/radio/components/StationCard.tsx",
+      "language": "typescript",
+      "summary": "Animated list-item card for a single radio station. Uses framer-motion for staggered entry animation. Highlights the active station with accent border and playing indicator. Renders favicon, station name, country flag (flagEmoji), bitrate and codec Badges, and a favourite heart toggle that writes to favoritesStore without bubbling the click to the parent onClick handler.",
+      "tags": [
+        "component",
+        "ui"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 103,
+      "exportedSymbols": [
+        "StationCard"
+      ],
+      "importCount": 4,
+      "name": "StationCard.tsx"
+    },
+    {
+      "id": "file:src/modules/radio/components/StationDetail.tsx",
+      "type": "file",
+      "label": "StationDetail.tsx",
+      "path": "src/modules/radio/components/StationDetail.tsx",
+      "language": "typescript",
+      "summary": "Expanded detail view for a selected station, rendered inside a Modal. Displays 80×80 favicon, name, country flag, language, bitrate/codec/status Badges, and up to 5 genre tags. Action buttons: favourite toggle (writes to favoritesStore), vote (calls radioBrowserApi.vote), and close. Reads live playback status from radioStore.",
+      "tags": [
+        "component",
+        "ui"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 101,
+      "exportedSymbols": [
+        "StationDetail"
+      ],
+      "importCount": 6,
+      "name": "StationDetail.tsx"
+    },
+    {
+      "id": "file:src/modules/radio/components/StationFilters.tsx",
+      "type": "file",
+      "label": "StationFilters.tsx",
+      "path": "src/modules/radio/components/StationFilters.tsx",
+      "language": "typescript",
+      "summary": "Filter controls panel for radio station search. Renders country and language text inputs, a bitrate-minimum Slider (0–320 kbps, step 32), a codec select (MP3/AAC/OGG/HLS), an order-by select (votes/popularity/name/bitrate), and a hide-broken checkbox. All controls are bound directly to radioStore via updateFilter.",
+      "tags": [
+        "component",
+        "ui"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 89,
+      "exportedSymbols": [
+        "StationFilters"
+      ],
+      "importCount": 3,
+      "name": "StationFilters.tsx"
+    },
+    {
+      "id": "file:src/modules/radio/hooks/useRadioBrowser.ts",
+      "type": "file",
+      "label": "useRadioBrowser.ts",
+      "path": "src/modules/radio/hooks/useRadioBrowser.ts",
+      "language": "typescript",
+      "summary": "React hook that wraps radioBrowserApi with loading and error state management. Exposes two memoised async actions: search (mapped from SearchParams) and loadTopStations (top 100 by votes). Both set isLoading in radioStore, catch errors into local state, and write result stations back to radioStore via setStations.",
+      "tags": [
+        "hook",
+        "service"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 37,
+      "exportedSymbols": [
+        "useRadioBrowser"
+      ],
+      "importCount": 2,
+      "name": "useRadioBrowser.ts"
+    },
+    {
+      "id": "file:src/modules/radio/hooks/useStreamCheck.ts",
+      "type": "file",
+      "label": "useStreamCheck.ts",
+      "path": "src/modules/radio/hooks/useStreamCheck.ts",
+      "language": "typescript",
+      "summary": "Lightweight React hook that validates stream URL reachability before playback. Delegates to checkStreamAvailability from corsProxy (HEAD request with 3-second timeout and CORS-proxy fallback). Exposes a memoised check(url) → Promise<boolean> and a checking boolean for UI feedback.",
+      "tags": [
+        "hook",
+        "service"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 18,
+      "exportedSymbols": [
+        "useStreamCheck"
+      ],
+      "importCount": 1,
+      "name": "useStreamCheck.ts"
+    },
+    {
+      "id": "file:src/modules/radio/services/radioBrowserApi.ts",
+      "type": "file",
+      "label": "radioBrowserApi.ts",
+      "path": "src/modules/radio/services/radioBrowserApi.ts",
+      "language": "typescript",
+      "summary": "HTTP client for the radio-browser.info public API. On first call, resolves a random live server via the discovery endpoint (https://all.api.radio-browser.info/json/servers) with fallback to de1.api.radio-browser.info. Implements apiFetchWithRetry (clears cached base on failure for automatic re-discovery). Exports radioBrowserApi object with: search, topVote, countries, tags, registerClick, and vote methods.",
+      "tags": [
+        "service"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 78,
+      "exportedSymbols": [
+        "radioBrowserApi"
+      ],
+      "importCount": 0,
+      "name": "radioBrowserApi.ts"
+    },
+    {
+      "id": "file:src/modules/radio/services/radioPlayer.ts",
+      "type": "file",
+      "label": "radioPlayer.ts",
+      "path": "src/modules/radio/services/radioPlayer.ts",
+      "language": "typescript",
+      "summary": "Singleton module-level Howl instance manager for radio playback. Stores a single radioHowl reference in module scope. Exports getRadioHowl and setRadioHowl for external access and mutation. stopRadio unloads the Howl instance and synchronously resets radioStore status to idle via getState().",
+      "tags": [
+        "service",
+        "singleton",
+        "audio-playback"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 24,
+      "exportedSymbols": [
+        "getRadioHowl",
+        "setRadioHowl",
+        "stopRadio"
+      ],
+      "importCount": 1,
+      "name": "radioPlayer.ts"
+    },
+    {
+      "id": "file:src/modules/radio/store/radioStore.ts",
+      "type": "file",
+      "label": "radioStore.ts",
+      "path": "src/modules/radio/store/radioStore.ts",
+      "language": "typescript",
+      "summary": "Zustand store for all radio module state. Holds the station list, currentStation, isPlaying, isLoading, and a status enum (idle | connecting | playing | error | offline). Also manages searchQuery and a filters object (country, language, tags[], bitrateMin, codec, hidebroken, order). Exposes typed setters and a generic updateFilter action.",
+      "tags": [
+        "state",
+        "zustand"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 71,
+      "exportedSymbols": [
+        "useRadioStore"
+      ],
+      "importCount": 0,
+      "name": "radioStore.ts"
+    },
+    {
+      "id": "file:src/pages/FavoritesPage.tsx",
+      "type": "file",
+      "label": "FavoritesPage.tsx",
+      "path": "src/pages/FavoritesPage.tsx",
+      "language": "typescript",
+      "summary": "Thin lazy-loaded route page for the Favorites section. Sets the page title via react-helmet-async and renders FavoritesList inside PageTransition.",
+      "tags": [
+        "ui",
+        "routing"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 18,
+      "exportedSymbols": [
+        "FavoritesPage"
+      ],
+      "importCount": 2,
+      "name": "FavoritesPage.tsx"
+    },
+    {
+      "id": "file:src/pages/PlayerPage.tsx",
+      "type": "file",
+      "label": "PlayerPage.tsx",
+      "path": "src/pages/PlayerPage.tsx",
+      "language": "typescript",
+      "summary": "Thin lazy-loaded route page for the local music player. Sets title and OG meta via react-helmet-async and renders LocalPlayer in a flex-height container inside PageTransition.",
+      "tags": [
+        "ui",
+        "routing"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 24,
+      "exportedSymbols": [
+        "PlayerPage"
+      ],
+      "importCount": 2,
+      "name": "PlayerPage.tsx"
+    },
+    {
+      "id": "file:src/pages/RadioPage.tsx",
+      "type": "file",
+      "label": "RadioPage.tsx",
+      "path": "src/pages/RadioPage.tsx",
+      "language": "typescript",
+      "summary": "Complex orchestrating route page for the radio feature. On mount loads top stations or runs a query-string search. The playStation() function (1) stops localPlayer via playerStore, (2) unloads the previous Howl, (3) validates URL reachability via useStreamCheck, (4) registers a click with radioBrowserApi, and (5) starts Howler.js playback with 3-attempt exponential-backoff retry using the CORS proxy on failure. Handles deep-link navigation via :uuid route param. Renders RadioSearch, a scrollable StationCard list, a now-playing status bar with share/stop controls, and two Modals (StationDetail, SharePanel).",
+      "tags": [
+        "component",
+        "routing",
+        "audio-playback"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 192,
+      "exportedSymbols": [
+        "RadioPage"
+      ],
+      "importCount": 14,
+      "name": "RadioPage.tsx"
+    },
+    {
+      "id": "file:src/pages/RecorderPage.tsx",
+      "type": "file",
+      "label": "RecorderPage.tsx",
+      "path": "src/pages/RecorderPage.tsx",
+      "language": "typescript",
+      "summary": "Thin lazy-loaded route page for the audio recorder. Sets the page title via react-helmet-async and renders Recorder inside PageTransition with a styled card container.",
+      "tags": [
+        "ui",
+        "routing"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 20,
+      "exportedSymbols": [
+        "RecorderPage"
+      ],
+      "importCount": 2,
+      "name": "RecorderPage.tsx"
+    },
+    {
+      "id": "file:src/shared/components/audio/Visualizer.tsx",
+      "type": "file",
+      "label": "Visualizer.tsx",
+      "path": "src/shared/components/audio/Visualizer.tsx",
+      "language": "typescript",
+      "summary": "Canvas-based real-time audio visualizer supporting three display modes — frequency bars, oscilloscope waveform, and circular radial bars. Reads frequency/time-domain data from AudioProvider's AnalyserNode via useAudioContext() and drives rendering with requestAnimationFrame. Colours are sourced from CSS custom properties (--accent-primary, --accent-secondary) so they respond to theme changes.",
+      "tags": [
+        "component",
+        "audio-visualization",
+        "canvas"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 80,
+      "exportedSymbols": [
+        "Visualizer"
+      ],
+      "importCount": 2,
+      "name": "Visualizer.tsx"
+    },
+    {
+      "id": "file:src/shared/components/layout/MiniPlayer.tsx",
+      "type": "file",
+      "label": "MiniPlayer.tsx",
+      "path": "src/shared/components/layout/MiniPlayer.tsx",
+      "language": "typescript",
+      "summary": "Persistent footer player bar rendered at the bottom of the shell. Displays current track or radio station artwork, title, artist, and playback position. Provides prev/play-pause/next controls, an embedded Visualizer (compact mode), cycle-able repeat mode, mute toggle, and volume slider. Reads state from both playerStore and radioStore to support unified track/radio playback.",
+      "tags": [
+        "component",
+        "layout",
+        "shell"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 100,
+      "exportedSymbols": [
+        "MiniPlayer"
+      ],
+      "importCount": 5,
+      "name": "MiniPlayer.tsx"
+    },
+    {
+      "id": "file:src/shared/components/layout/PageTransition.tsx",
+      "type": "file",
+      "label": "PageTransition.tsx",
+      "path": "src/shared/components/layout/PageTransition.tsx",
+      "language": "typescript",
+      "summary": "Thin framer-motion wrapper that applies a 180 ms fade + 8 px vertical slide animation (in/out) to any page content. Used within AnimatePresence in the router to produce smooth page-change transitions.",
+      "tags": [
+        "component",
+        "layout",
+        "shell"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 30,
+      "exportedSymbols": [
+        "PageTransition"
+      ],
+      "importCount": 2,
+      "name": "PageTransition.tsx"
+    },
+    {
+      "id": "file:src/shared/components/layout/Sidebar.tsx",
+      "type": "file",
+      "label": "Sidebar.tsx",
+      "path": "src/shared/components/layout/Sidebar.tsx",
+      "language": "typescript",
+      "summary": "Navigation sidebar containing the SoundWave logo, NavLink items for Player, Radio, Favorites, and Recorder (with active-state highlighting), and an inline theme switcher (dark/light/neon) that delegates to ThemeProvider. Width is controlled by the --sidebar-width CSS custom property.",
+      "tags": [
+        "component",
+        "layout",
+        "shell"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 80,
+      "exportedSymbols": [
+        "Sidebar"
+      ],
+      "importCount": 2,
+      "name": "Sidebar.tsx"
+    },
+    {
+      "id": "file:src/shared/components/layout/TopBar.tsx",
+      "type": "file",
+      "label": "TopBar.tsx",
+      "path": "src/shared/components/layout/TopBar.tsx",
+      "language": "typescript",
+      "summary": "Top application bar (56 px tall) containing a global search form that navigates to /radio?q=<query> on submit, using the shared Input UI primitive. Displays the version string at the trailing edge.",
+      "tags": [
+        "component",
+        "layout",
+        "shell"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 80,
+      "exportedSymbols": [
+        "TopBar"
+      ],
+      "importCount": 3,
+      "name": "TopBar.tsx"
+    },
+    {
+      "id": "file:src/shared/components/ui/Badge.tsx",
+      "type": "file",
+      "label": "Badge.tsx",
+      "path": "src/shared/components/ui/Badge.tsx",
+      "language": "typescript",
+      "summary": "Minimal pill-shaped label component. Accepts children and an optional colour override string applied to the background. Styled with design-system CSS custom properties for border and text colour.",
+      "tags": [
+        "component",
+        "ui",
+        "design-system"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 30,
+      "exportedSymbols": [
+        "Badge"
+      ],
+      "importCount": 1,
+      "name": "Badge.tsx"
+    },
+    {
+      "id": "file:src/shared/components/ui/Button.tsx",
+      "type": "file",
+      "label": "Button.tsx",
+      "path": "src/shared/components/ui/Button.tsx",
+      "language": "typescript",
+      "summary": "Polymorphic button primitive built with clsx for conditional class composition. Supports four variants (primary, ghost, danger, outline) and four sizes (sm, md, lg, icon). Includes focus-visible outline, disabled opacity, and mono-font styling. Extends HTMLButtonElement attributes.",
+      "tags": [
+        "component",
+        "ui",
+        "design-system"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 40,
+      "exportedSymbols": [
+        "Button"
+      ],
+      "importCount": 2,
+      "name": "Button.tsx"
+    },
+    {
+      "id": "file:src/shared/components/ui/Input.tsx",
+      "type": "file",
+      "label": "Input.tsx",
+      "path": "src/shared/components/ui/Input.tsx",
+      "language": "typescript",
+      "summary": "Controlled text input primitive with optional label. Applies accent-primary border colour on focus/blur via inline event handlers. Styled with design-system custom properties; spreads all native HTMLInputElement attributes.",
+      "tags": [
+        "component",
+        "ui",
+        "design-system"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 40,
+      "exportedSymbols": [
+        "Input"
+      ],
+      "importCount": 1,
+      "name": "Input.tsx"
+    },
+    {
+      "id": "file:src/shared/components/ui/Modal.tsx",
+      "type": "file",
+      "label": "Modal.tsx",
+      "path": "src/shared/components/ui/Modal.tsx",
+      "language": "typescript",
+      "summary": "Accessible modal dialog rendered via a fixed full-viewport backdrop. Handles Escape key closure via a document keydown listener and backdrop click-to-close. Shows an optional titled header with a close button. Constrains content to 600 px max width with internal scroll.",
+      "tags": [
+        "component",
+        "ui",
+        "design-system"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 50,
+      "exportedSymbols": [
+        "Modal"
+      ],
+      "importCount": 1,
+      "name": "Modal.tsx"
+    },
+    {
+      "id": "file:src/shared/components/ui/Slider.tsx",
+      "type": "file",
+      "label": "Slider.tsx",
+      "path": "src/shared/components/ui/Slider.tsx",
+      "language": "typescript",
+      "summary": "Styled range input wrapper with an optional visible label. Uses accent-primary via accentColor. Omits the native type attribute from its prop interface and forwards all other HTMLInputElement attributes.",
+      "tags": [
+        "component",
+        "ui",
+        "design-system"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 40,
+      "exportedSymbols": [
+        "Slider"
+      ],
+      "importCount": 1,
+      "name": "Slider.tsx"
+    },
+    {
+      "id": "file:src/shared/components/ui/Spinner.tsx",
+      "type": "file",
+      "label": "Spinner.tsx",
+      "path": "src/shared/components/ui/Spinner.tsx",
+      "language": "typescript",
+      "summary": "Lightweight CSS animation spinner. Renders a circular div with a single top-border coloured with --accent-primary spinning at 0.8 s. Injects the @keyframes spin rule once into document.head at module load time.",
+      "tags": [
+        "component",
+        "ui",
+        "design-system"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 20,
+      "exportedSymbols": [
+        "Spinner"
+      ],
+      "importCount": 0,
+      "name": "Spinner.tsx"
+    },
+    {
+      "id": "file:src/shared/hooks/useKeyboardShortcuts.ts",
+      "type": "file",
+      "label": "useKeyboardShortcuts.ts",
+      "path": "src/shared/hooks/useKeyboardShortcuts.ts",
+      "language": "typescript",
+      "summary": "Global keyboard shortcut hook attached to window keydown. Space toggles play/pause, ArrowLeft/Right (with optional Shift modifier) seek 10 s or skip tracks, and M toggles mute. Input/Textarea elements are excluded from interception. Reads and writes playerStore actions directly.",
+      "tags": [
+        "hook",
+        "keyboard",
+        "accessibility"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 60,
+      "exportedSymbols": [
+        "useKeyboardShortcuts"
+      ],
+      "importCount": 2,
+      "name": "useKeyboardShortcuts.ts"
+    },
+    {
+      "id": "file:src/shared/hooks/useMediaSession.ts",
+      "type": "file",
+      "label": "useMediaSession.ts",
+      "path": "src/shared/hooks/useMediaSession.ts",
+      "language": "typescript",
+      "summary": "Web Media Session API integration hook. Updates navigator.mediaSession.metadata with the current track or radio station title, artist, and artwork image. Registers play, pause, previoustrack, and nexttrack OS-level action handlers delegating to playerStore. Falls back silently when the API is unavailable.",
+      "tags": [
+        "hook",
+        "media-session",
+        "os-integration"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 60,
+      "exportedSymbols": [
+        "useMediaSession"
+      ],
+      "importCount": 3,
+      "name": "useMediaSession.ts"
+    },
+    {
+      "id": "file:src/shared/utils/audioUtils.ts",
+      "type": "file",
+      "label": "audioUtils.ts",
+      "path": "src/shared/utils/audioUtils.ts",
+      "language": "typescript",
+      "summary": "Pure audio utility functions: formatTime() converts seconds to M:SS, formatFileSize() formats byte counts to human-readable strings, getSupportedMimeType() probes MediaRecorder for the best supported audio codec, getFileExtFromMime() maps MIME type to file extension, and estimatedFileSizeMB() estimates recording size from duration and bitrate.",
+      "tags": [
+        "utility",
+        "audio",
+        "formatting"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 60,
+      "exportedSymbols": [
+        "formatTime",
+        "formatFileSize",
+        "getSupportedMimeType",
+        "getFileExtFromMime",
+        "estimatedFileSizeMB"
+      ],
+      "importCount": 0,
+      "name": "audioUtils.ts"
+    },
+    {
+      "id": "file:src/shared/utils/corsProxy.ts",
+      "type": "file",
+      "label": "corsProxy.ts",
+      "path": "src/shared/utils/corsProxy.ts",
+      "language": "typescript",
+      "summary": "CORS proxy utilities for blocked radio streams. proxify() prepends the VITE_CORS_PROXY_URL environment variable to a target URL (no-op if unset). checkStreamAvailability() performs a HEAD request with a configurable timeout (default 3 s) to test whether a stream URL is reachable.",
+      "tags": [
+        "utility",
+        "networking",
+        "cors"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 30,
+      "exportedSymbols": [
+        "proxify",
+        "checkStreamAvailability"
+      ],
+      "importCount": 0,
+      "name": "corsProxy.ts"
+    },
+    {
+      "id": "file:src/shared/utils/formatters.ts",
+      "type": "file",
+      "label": "formatters.ts",
+      "path": "src/shared/utils/formatters.ts",
+      "language": "typescript",
+      "summary": "General-purpose string/date formatters: formatDate() produces a filesystem-safe ISO-like timestamp, truncate() clips strings to a max length with an ellipsis, and flagEmoji() converts a 2-letter ISO country code to its corresponding flag emoji using Unicode regional indicator symbols.",
+      "tags": [
+        "utility",
+        "formatting"
+      ],
+      "complexity": "moderate",
+      "sizeLines": 40,
+      "exportedSymbols": [
+        "formatDate",
+        "truncate",
+        "flagEmoji"
+      ],
+      "importCount": 0,
+      "name": "formatters.ts"
+    },
+    {
+      "id": "function:src/shared/components/audio/Visualizer.tsx:Visualizer",
+      "type": "function",
+      "label": "Visualizer",
+      "path": "src/shared/components/audio/Visualizer.tsx",
+      "language": "typescript",
+      "summary": "React component that drives a canvas element with a requestAnimationFrame draw loop in three modes: gradient frequency bars, oscilloscope waveform, and radial circular bars. Connects to the Web Audio AnalyserNode from AudioProvider context.",
+      "tags": [
+        "component",
+        "audio-visualization",
+        "canvas"
+      ],
+      "complexity": "moderate",
+      "lineStart": 13,
+      "lineEnd": 91,
+      "params": [
+        {
+          "name": "width",
+          "type": "number"
+        },
+        {
+          "name": "height",
+          "type": "number"
+        },
+        {
+          "name": "mode",
+          "type": "VisMode"
+        },
+        {
+          "name": "compact",
+          "type": "boolean"
+        }
+      ],
+      "name": "Visualizer"
+    },
+    {
+      "id": "function:src/shared/components/layout/MiniPlayer.tsx:MiniPlayer",
+      "type": "function",
+      "label": "MiniPlayer",
+      "path": "src/shared/components/layout/MiniPlayer.tsx",
+      "language": "typescript",
+      "summary": "Persistent footer playback bar unifying track and radio station display with transport controls, embedded Visualizer, repeat mode cycling, mute, and volume slider.",
+      "tags": [
+        "component",
+        "layout",
+        "shell"
+      ],
+      "complexity": "moderate",
+      "lineStart": 7,
+      "lineEnd": 182,
+      "params": [],
+      "name": "MiniPlayer"
+    },
+    {
+      "id": "function:src/shared/hooks/useKeyboardShortcuts.ts:useKeyboardShortcuts",
+      "type": "function",
+      "label": "useKeyboardShortcuts",
+      "path": "src/shared/hooks/useKeyboardShortcuts.ts",
+      "language": "typescript",
+      "summary": "Hook registering a global window keydown listener for Space (play/pause), ArrowLeft/Right (prev/next or seek ±10 s with Shift), and M (mute). Cleans up listener on unmount.",
+      "tags": [
+        "hook",
+        "keyboard",
+        "accessibility"
+      ],
+      "complexity": "moderate",
+      "lineStart": 4,
+      "lineEnd": 35,
+      "params": [],
+      "name": "useKeyboardShortcuts"
+    },
+    {
+      "id": "function:src/shared/hooks/useMediaSession.ts:useMediaSession",
+      "type": "function",
+      "label": "useMediaSession",
+      "path": "src/shared/hooks/useMediaSession.ts",
+      "language": "typescript",
+      "summary": "Hook that syncs the current playback context (track or radio station) to the OS media session metadata and wires OS-level media key actions to playerStore handlers.",
+      "tags": [
+        "hook",
+        "media-session",
+        "os-integration"
+      ],
+      "complexity": "moderate",
+      "lineStart": 5,
+      "lineEnd": 29,
+      "params": [],
+      "name": "useMediaSession"
+    },
+    {
+      "id": "function:src/shared/utils/audioUtils.ts:formatTime",
+      "type": "function",
+      "label": "formatTime",
+      "path": "src/shared/utils/audioUtils.ts",
+      "language": "typescript",
+      "summary": "Converts a floating-point seconds value to an M:SS display string. Returns '0:00' for non-finite inputs.",
+      "tags": [
+        "utility",
+        "audio",
+        "formatting"
+      ],
+      "complexity": "moderate",
+      "lineStart": 1,
+      "lineEnd": 6,
+      "params": [
+        {
+          "name": "seconds",
+          "type": "number"
+        }
+      ],
+      "name": "formatTime"
+    },
+    {
+      "id": "function:src/shared/utils/audioUtils.ts:getSupportedMimeType",
+      "type": "function",
+      "label": "getSupportedMimeType",
+      "path": "src/shared/utils/audioUtils.ts",
+      "language": "typescript",
+      "summary": "Probes MediaRecorder.isTypeSupported() in priority order (webm/opus → ogg/opus → webm → ogg) and returns the first supported MIME type string, or an empty string if none match.",
+      "tags": [
+        "utility",
+        "audio"
+      ],
+      "complexity": "moderate",
+      "lineStart": 14,
+      "lineEnd": 25,
+      "params": [],
+      "name": "getSupportedMimeType"
+    },
+    {
+      "id": "function:src/shared/utils/audioUtils.ts:estimatedFileSizeMB",
+      "type": "function",
+      "label": "estimatedFileSizeMB",
+      "path": "src/shared/utils/audioUtils.ts",
+      "language": "typescript",
+      "summary": "Estimates a recording's file size in megabytes given a duration in seconds and an optional bitrate in kbps (default 192). Uses the formula: bitrate × 1000 × seconds / 8 / 1024 / 1024.",
+      "tags": [
+        "utility",
+        "audio"
+      ],
+      "complexity": "moderate",
+      "lineStart": 33,
+      "lineEnd": 35,
+      "params": [
+        {
+          "name": "seconds",
+          "type": "number"
+        },
+        {
+          "name": "bitrateKbps",
+          "type": "number"
+        }
+      ],
+      "name": "estimatedFileSizeMB"
+    },
+    {
+      "id": "function:src/shared/utils/corsProxy.ts:checkStreamAvailability",
+      "type": "function",
+      "label": "checkStreamAvailability",
+      "path": "src/shared/utils/corsProxy.ts",
+      "language": "typescript",
+      "summary": "Async function that HEAD-requests a stream URL with an AbortController timeout (default 3000 ms). Returns true if the response status is 200/206/ok, false on network error or timeout.",
+      "tags": [
+        "utility",
+        "networking",
+        "cors"
+      ],
+      "complexity": "moderate",
+      "lineStart": 8,
+      "lineEnd": 18,
+      "params": [
+        {
+          "name": "url",
+          "type": "string"
+        },
+        {
+          "name": "timeoutMs",
+          "type": "number"
+        }
+      ],
+      "name": "checkStreamAvailability"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:config/plugins/index.ts",
+      "target": "file:config/plugins/react.ts",
+      "type": "imports",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "file:config/plugins/index.ts",
+      "target": "file:config/plugins/tailwind.ts",
+      "type": "imports",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "file:config/plugins/index.ts",
+      "target": "file:config/plugins/pwa.ts",
+      "type": "imports",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "config:tsconfig.json",
+      "target": "file:src/main.tsx",
+      "type": "configures",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "config:tsconfig.app.json",
+      "target": "file:src/main.tsx",
+      "type": "configures",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "file:vite.config.ts",
+      "target": "file:src/main.tsx",
+      "type": "configures",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "config:package.json",
+      "target": "file:src/main.tsx",
+      "type": "configures",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "config:eslint.config.js",
+      "target": "file:src/main.tsx",
+      "type": "configures",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "file:vitest.config.ts",
+      "target": "file:src/__tests__/example.test.ts",
+      "type": "configures",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "file:src/main.tsx",
+      "target": "file:src/app/App.tsx",
+      "type": "imports",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "file:src/main.tsx",
+      "type": "documents",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:src/main.tsx",
+      "type": "documents",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "document:docs/superpowers/plans/2026-03-27-soundwave-optimization.md",
+      "target": "file:src/main.tsx",
+      "type": "documents",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "document:docs/superpowers/specs/2026-03-27-soundwave-optimization-design.md",
+      "target": "file:src/main.tsx",
+      "type": "documents",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "file:index.html",
+      "target": "file:src/main.tsx",
+      "type": "imports",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "file:src/styles/globals.css",
+      "target": "file:src/main.tsx",
+      "type": "imports",
+      "direction": "inbound",
+      "weight": 1
+    },
+    {
+      "source": "config:tsconfig.node.json",
+      "target": "file:vite.config.ts",
+      "type": "configures",
+      "direction": "outbound",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/App.tsx",
+      "target": "file:src/app/providers/AudioProvider.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports AudioProvider"
+    },
+    {
+      "source": "file:src/app/App.tsx",
+      "target": "file:src/app/providers/ThemeProvider.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports ThemeProvider"
+    },
+    {
+      "source": "file:src/app/App.tsx",
+      "target": "file:src/app/providers/NotificationProvider.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports NotificationProvider"
+    },
+    {
+      "source": "file:src/app/App.tsx",
+      "target": "file:src/app/Router.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports AppRouter"
+    },
+    {
+      "source": "file:src/app/App.tsx",
+      "target": "file:src/modules/favorites/store/favoritesStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useFavoritesStore"
+    },
+    {
+      "source": "file:src/app/App.tsx",
+      "target": "file:src/modules/player/hooks/useAudioEngine.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useAudioEngine"
+    },
+    {
+      "source": "file:src/app/Router.tsx",
+      "target": "file:src/app/providers/AudioProvider.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports (via lazy pages)"
+    },
+    {
+      "source": "file:src/modules/favorites/components/FavoritesList.tsx",
+      "target": "file:src/modules/favorites/store/favoritesStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useFavoritesStore"
+    },
+    {
+      "source": "file:src/modules/favorites/store/favoritesStore.ts",
+      "target": "file:src/modules/favorites/db/favoritesDb.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports db + types"
+    },
+    {
+      "source": "file:src/modules/player/components/Equalizer.tsx",
+      "target": "file:src/app/providers/AudioProvider.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useAudioContext"
+    },
+    {
+      "source": "file:src/modules/player/components/LocalPlayer.tsx",
+      "target": "file:src/modules/player/hooks/useLocalFiles.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useLocalFiles"
+    },
+    {
+      "source": "file:src/modules/player/components/LocalPlayer.tsx",
+      "target": "file:src/modules/player/store/playerStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports usePlayerStore"
+    },
+    {
+      "source": "file:src/modules/player/components/LocalPlayer.tsx",
+      "target": "file:src/modules/player/components/TrackList.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports TrackList"
+    },
+    {
+      "source": "file:src/modules/player/components/LocalPlayer.tsx",
+      "target": "file:src/modules/player/components/Equalizer.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports Equalizer"
+    },
+    {
+      "source": "file:src/modules/player/components/TrackList.tsx",
+      "target": "file:src/modules/player/store/playerStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports usePlayerStore"
+    },
+    {
+      "source": "file:src/modules/player/components/TrackList.tsx",
+      "target": "file:src/modules/favorites/db/favoritesDb.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports LocalTrack type"
+    },
+    {
+      "source": "file:src/modules/player/hooks/useAudioEngine.ts",
+      "target": "file:src/modules/player/store/playerStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports usePlayerStore"
+    },
+    {
+      "source": "file:src/modules/player/hooks/useAudioEngine.ts",
+      "target": "file:src/app/providers/AudioProvider.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useAudioContext"
+    },
+    {
+      "source": "file:src/modules/player/hooks/useLocalFiles.ts",
+      "target": "file:src/modules/favorites/db/favoritesDb.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports db + LocalTrack"
+    },
+    {
+      "source": "file:src/modules/player/hooks/useLocalFiles.ts",
+      "target": "file:src/modules/player/store/playerStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports usePlayerStore"
+    },
+    {
+      "source": "file:src/modules/player/hooks/useLocalFiles.ts",
+      "target": "file:src/modules/player/hooks/useAudioEngine.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports registerFile"
+    },
+    {
+      "source": "file:src/modules/player/store/playerStore.ts",
+      "target": "file:src/modules/favorites/db/favoritesDb.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports LocalTrack type"
+    },
+    {
+      "source": "file:src/modules/recorder/components/Recorder.tsx",
+      "target": "file:src/modules/recorder/store/recorderStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useRecorderStore"
+    },
+    {
+      "source": "file:src/modules/recorder/components/Recorder.tsx",
+      "target": "file:src/app/providers/AudioProvider.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useAudioContext"
+    },
+    {
+      "source": "file:src/modules/recorder/components/Recorder.tsx",
+      "target": "file:src/modules/recorder/components/VUMeter.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports VUMeter"
+    },
+    {
+      "source": "file:src/app/App.tsx",
+      "target": "file:src/__tests__/example.test.ts",
+      "type": "tested_by",
+      "weight": 0.5,
+      "label": "tested by"
+    },
+    {
+      "source": "file:src/app/providers/AudioProvider.tsx",
+      "target": "function:src/app/providers/AudioProvider.tsx:AudioProvider",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/app/providers/AudioProvider.tsx",
+      "target": "function:src/app/providers/AudioProvider.tsx:useAudioContext",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/app/providers/NotificationProvider.tsx",
+      "target": "function:src/app/providers/NotificationProvider.tsx:NotificationProvider",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/app/providers/ThemeProvider.tsx",
+      "target": "function:src/app/providers/ThemeProvider.tsx:ThemeProvider",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/modules/favorites/store/favoritesStore.ts",
+      "target": "function:src/modules/favorites/store/favoritesStore.ts:useFavoritesStore",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/modules/player/hooks/useAudioEngine.ts",
+      "target": "function:src/modules/player/hooks/useAudioEngine.ts:useAudioEngine",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/modules/player/hooks/useAudioEngine.ts",
+      "target": "function:src/modules/player/hooks/useAudioEngine.ts:registerFile",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/modules/player/hooks/useLocalFiles.ts",
+      "target": "function:src/modules/player/hooks/useLocalFiles.ts:useLocalFiles",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/modules/player/store/playerStore.ts",
+      "target": "function:src/modules/player/store/playerStore.ts:usePlayerStore",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/modules/recorder/components/Recorder.tsx",
+      "target": "function:src/modules/recorder/components/Recorder.tsx:Recorder",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/modules/recorder/store/recorderStore.ts",
+      "target": "function:src/modules/recorder/store/recorderStore.ts:useRecorderStore",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/modules/favorites/db/favoritesDb.ts",
+      "target": "class:src/modules/favorites/db/favoritesDb.ts:SoundWaveDB",
+      "type": "contains",
+      "weight": 1,
+      "label": "contains"
+    },
+    {
+      "source": "file:src/app/providers/AudioProvider.tsx",
+      "target": "function:src/app/providers/AudioProvider.tsx:AudioProvider",
+      "type": "exports",
+      "weight": 0.8,
+      "label": "exports"
+    },
+    {
+      "source": "file:src/app/providers/AudioProvider.tsx",
+      "target": "function:src/app/providers/AudioProvider.tsx:useAudioContext",
+      "type": "exports",
+      "weight": 0.8,
+      "label": "exports"
+    },
+    {
+      "source": "file:src/app/providers/NotificationProvider.tsx",
+      "target": "function:src/app/providers/NotificationProvider.tsx:NotificationProvider",
+      "type": "exports",
+      "weight": 0.8,
+      "label": "exports"
+    },
+    {
+      "source": "file:src/app/providers/ThemeProvider.tsx",
+      "target": "function:src/app/providers/ThemeProvider.tsx:ThemeProvider",
+      "type": "exports",
+      "weight": 0.8,
+      "label": "exports"
+    },
+    {
+      "source": "file:src/modules/favorites/store/favoritesStore.ts",
+      "target": "function:src/modules/favorites/store/favoritesStore.ts:useFavoritesStore",
+      "type": "exports",
+      "weight": 0.8,
+      "label": "exports"
+    },
+    {
+      "source": "file:src/modules/player/hooks/useAudioEngine.ts",
+      "target": "function:src/modules/player/hooks/useAudioEngine.ts:useAudioEngine",
+      "type": "exports",
+      "weight": 0.8,
+      "label": "exports"
+    },
+    {
+      "source": "file:src/modules/player/hooks/useAudioEngine.ts",
+      "target": "function:src/modules/player/hooks/useAudioEngine.ts:registerFile",
+      "type": "exports",
+      "weight": 0.8,
+      "label": "exports"
+    },
+    {
+      "source": "file:src/modules/player/hooks/useLocalFiles.ts",
+      "target": "function:src/modules/player/hooks/useLocalFiles.ts:useLocalFiles",
+      "type": "exports",
+      "weight": 0.8,
+      "label": "exports"
+    },
+    {
+      "source": "file:src/modules/player/store/playerStore.ts",
+      "target": "function:src/modules/player/store/playerStore.ts:usePlayerStore",
+      "type": "exports",
+      "weight": 0.8,
+      "label": "exports"
+    },
+    {
+      "source": "file:src/modules/recorder/components/Recorder.tsx",
+      "target": "function:src/modules/recorder/components/Recorder.tsx:Recorder",
+      "type": "exports",
+      "weight": 0.8,
+      "label": "exports"
+    },
+    {
+      "source": "file:src/modules/recorder/store/recorderStore.ts",
+      "target": "function:src/modules/recorder/store/recorderStore.ts:useRecorderStore",
+      "type": "exports",
+      "weight": 0.8,
+      "label": "exports"
+    },
+    {
+      "id": "edge:RadioSearch->useRadioBrowser",
+      "source": "file:src/modules/radio/components/RadioSearch.tsx",
+      "target": "file:src/modules/radio/hooks/useRadioBrowser.ts",
+      "type": "imports",
+      "label": "uses hook"
+    },
+    {
+      "id": "edge:RadioSearch->radioStore",
+      "source": "file:src/modules/radio/components/RadioSearch.tsx",
+      "target": "file:src/modules/radio/store/radioStore.ts",
+      "type": "imports",
+      "label": "reads/writes store"
+    },
+    {
+      "id": "edge:RadioSearch->StationFilters",
+      "source": "file:src/modules/radio/components/RadioSearch.tsx",
+      "target": "file:src/modules/radio/components/StationFilters.tsx",
+      "type": "imports",
+      "label": "renders component"
+    },
+    {
+      "id": "edge:RadioSearch->Input",
+      "source": "file:src/modules/radio/components/RadioSearch.tsx",
+      "target": "file:src/shared/components/ui/Input.tsx",
+      "type": "imports",
+      "label": "uses ui"
+    },
+    {
+      "id": "edge:RadioSearch->Button",
+      "source": "file:src/modules/radio/components/RadioSearch.tsx",
+      "target": "file:src/shared/components/ui/Button.tsx",
+      "type": "imports",
+      "label": "uses ui"
+    },
+    {
+      "id": "edge:SharePanel->radioStore",
+      "source": "file:src/modules/radio/components/SharePanel.tsx",
+      "target": "file:src/modules/radio/store/radioStore.ts",
+      "type": "imports",
+      "label": "reads type"
+    },
+    {
+      "id": "edge:SharePanel->Button",
+      "source": "file:src/modules/radio/components/SharePanel.tsx",
+      "target": "file:src/shared/components/ui/Button.tsx",
+      "type": "imports",
+      "label": "uses ui"
+    },
+    {
+      "id": "edge:SharePanel->Spinner",
+      "source": "file:src/modules/radio/components/SharePanel.tsx",
+      "target": "file:src/shared/components/ui/Spinner.tsx",
+      "type": "imports",
+      "label": "uses ui"
+    },
+    {
+      "id": "edge:StationCard->radioStore",
+      "source": "file:src/modules/radio/components/StationCard.tsx",
+      "target": "file:src/modules/radio/store/radioStore.ts",
+      "type": "imports",
+      "label": "reads store"
+    },
+    {
+      "id": "edge:StationCard->favoritesStore",
+      "source": "file:src/modules/radio/components/StationCard.tsx",
+      "target": "file:src/modules/favorites/store/favoritesStore.ts",
+      "type": "imports",
+      "label": "reads/writes store"
+    },
+    {
+      "id": "edge:StationCard->formatters",
+      "source": "file:src/modules/radio/components/StationCard.tsx",
+      "target": "file:src/shared/utils/formatters.ts",
+      "type": "imports",
+      "label": "uses utility"
+    },
+    {
+      "id": "edge:StationCard->Badge",
+      "source": "file:src/modules/radio/components/StationCard.tsx",
+      "target": "file:src/shared/components/ui/Badge.tsx",
+      "type": "imports",
+      "label": "uses ui"
+    },
+    {
+      "id": "edge:StationDetail->radioStore",
+      "source": "file:src/modules/radio/components/StationDetail.tsx",
+      "target": "file:src/modules/radio/store/radioStore.ts",
+      "type": "imports",
+      "label": "reads store"
+    },
+    {
+      "id": "edge:StationDetail->favoritesStore",
+      "source": "file:src/modules/radio/components/StationDetail.tsx",
+      "target": "file:src/modules/favorites/store/favoritesStore.ts",
+      "type": "imports",
+      "label": "reads/writes store"
+    },
+    {
+      "id": "edge:StationDetail->formatters",
+      "source": "file:src/modules/radio/components/StationDetail.tsx",
+      "target": "file:src/shared/utils/formatters.ts",
+      "type": "imports",
+      "label": "uses utility"
+    },
+    {
+      "id": "edge:StationDetail->Badge",
+      "source": "file:src/modules/radio/components/StationDetail.tsx",
+      "target": "file:src/shared/components/ui/Badge.tsx",
+      "type": "imports",
+      "label": "uses ui"
+    },
+    {
+      "id": "edge:StationDetail->Button",
+      "source": "file:src/modules/radio/components/StationDetail.tsx",
+      "target": "file:src/shared/components/ui/Button.tsx",
+      "type": "imports",
+      "label": "uses ui"
+    },
+    {
+      "id": "edge:StationDetail->radioBrowserApi",
+      "source": "file:src/modules/radio/components/StationDetail.tsx",
+      "target": "file:src/modules/radio/services/radioBrowserApi.ts",
+      "type": "imports",
+      "label": "calls api"
+    },
+    {
+      "id": "edge:StationFilters->radioStore",
+      "source": "file:src/modules/radio/components/StationFilters.tsx",
+      "target": "file:src/modules/radio/store/radioStore.ts",
+      "type": "imports",
+      "label": "reads/writes store"
+    },
+    {
+      "id": "edge:StationFilters->Slider",
+      "source": "file:src/modules/radio/components/StationFilters.tsx",
+      "target": "file:src/shared/components/ui/Slider.tsx",
+      "type": "imports",
+      "label": "uses ui"
+    },
+    {
+      "id": "edge:StationFilters->Input",
+      "source": "file:src/modules/radio/components/StationFilters.tsx",
+      "target": "file:src/shared/components/ui/Input.tsx",
+      "type": "imports",
+      "label": "uses ui"
+    },
+    {
+      "id": "edge:useRadioBrowser->radioBrowserApi",
+      "source": "file:src/modules/radio/hooks/useRadioBrowser.ts",
+      "target": "file:src/modules/radio/services/radioBrowserApi.ts",
+      "type": "imports",
+      "label": "calls api"
+    },
+    {
+      "id": "edge:useRadioBrowser->radioStore",
+      "source": "file:src/modules/radio/hooks/useRadioBrowser.ts",
+      "target": "file:src/modules/radio/store/radioStore.ts",
+      "type": "imports",
+      "label": "reads/writes store"
+    },
+    {
+      "id": "edge:useStreamCheck->corsProxy",
+      "source": "file:src/modules/radio/hooks/useStreamCheck.ts",
+      "target": "file:src/shared/utils/corsProxy.ts",
+      "type": "imports",
+      "label": "uses utility"
+    },
+    {
+      "id": "edge:radioPlayer->radioStore",
+      "source": "file:src/modules/radio/services/radioPlayer.ts",
+      "target": "file:src/modules/radio/store/radioStore.ts",
+      "type": "imports",
+      "label": "reads/writes store"
+    },
+    {
+      "id": "edge:FavoritesPage->FavoritesList",
+      "source": "file:src/pages/FavoritesPage.tsx",
+      "target": "file:src/modules/favorites/components/FavoritesList.tsx",
+      "type": "imports",
+      "label": "renders component"
+    },
+    {
+      "id": "edge:FavoritesPage->PageTransition",
+      "source": "file:src/pages/FavoritesPage.tsx",
+      "target": "file:src/shared/components/layout/PageTransition.tsx",
+      "type": "imports",
+      "label": "uses layout"
+    },
+    {
+      "id": "edge:PlayerPage->LocalPlayer",
+      "source": "file:src/pages/PlayerPage.tsx",
+      "target": "file:src/modules/player/components/LocalPlayer.tsx",
+      "type": "imports",
+      "label": "renders component"
+    },
+    {
+      "id": "edge:PlayerPage->PageTransition",
+      "source": "file:src/pages/PlayerPage.tsx",
+      "target": "file:src/shared/components/layout/PageTransition.tsx",
+      "type": "imports",
+      "label": "uses layout"
+    },
+    {
+      "id": "edge:RadioPage->PageTransition",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/shared/components/layout/PageTransition.tsx",
+      "type": "imports",
+      "label": "uses layout"
+    },
+    {
+      "id": "edge:RadioPage->RadioSearch",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/modules/radio/components/RadioSearch.tsx",
+      "type": "imports",
+      "label": "renders component"
+    },
+    {
+      "id": "edge:RadioPage->StationCard",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/modules/radio/components/StationCard.tsx",
+      "type": "imports",
+      "label": "renders component"
+    },
+    {
+      "id": "edge:RadioPage->StationDetail",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/modules/radio/components/StationDetail.tsx",
+      "type": "imports",
+      "label": "renders component"
+    },
+    {
+      "id": "edge:RadioPage->Modal",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/shared/components/ui/Modal.tsx",
+      "type": "imports",
+      "label": "uses ui"
+    },
+    {
+      "id": "edge:RadioPage->SharePanel",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/modules/radio/components/SharePanel.tsx",
+      "type": "imports",
+      "label": "renders component"
+    },
+    {
+      "id": "edge:RadioPage->Spinner",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/shared/components/ui/Spinner.tsx",
+      "type": "imports",
+      "label": "uses ui"
+    },
+    {
+      "id": "edge:RadioPage->radioStore",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/modules/radio/store/radioStore.ts",
+      "type": "imports",
+      "label": "reads/writes store"
+    },
+    {
+      "id": "edge:RadioPage->useRadioBrowser",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/modules/radio/hooks/useRadioBrowser.ts",
+      "type": "imports",
+      "label": "uses hook"
+    },
+    {
+      "id": "edge:RadioPage->useStreamCheck",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/modules/radio/hooks/useStreamCheck.ts",
+      "type": "imports",
+      "label": "uses hook"
+    },
+    {
+      "id": "edge:RadioPage->radioBrowserApi",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/modules/radio/services/radioBrowserApi.ts",
+      "type": "imports",
+      "label": "calls api"
+    },
+    {
+      "id": "edge:RadioPage->corsProxy",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/shared/utils/corsProxy.ts",
+      "type": "imports",
+      "label": "uses utility"
+    },
+    {
+      "id": "edge:RadioPage->radioPlayer",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/modules/radio/services/radioPlayer.ts",
+      "type": "imports",
+      "label": "controls singleton"
+    },
+    {
+      "id": "edge:RadioPage->playerStore",
+      "source": "file:src/pages/RadioPage.tsx",
+      "target": "file:src/modules/player/store/playerStore.ts",
+      "type": "imports",
+      "label": "reads/writes store"
+    },
+    {
+      "id": "edge:RecorderPage->Recorder",
+      "source": "file:src/pages/RecorderPage.tsx",
+      "target": "file:src/modules/recorder/components/Recorder.tsx",
+      "type": "imports",
+      "label": "renders component"
+    },
+    {
+      "id": "edge:RecorderPage->PageTransition",
+      "source": "file:src/pages/RecorderPage.tsx",
+      "target": "file:src/shared/components/layout/PageTransition.tsx",
+      "type": "imports",
+      "label": "uses layout"
+    },
+    {
+      "source": "file:src/shared/components/audio/Visualizer.tsx",
+      "target": "file:src/app/providers/AudioProvider.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useAudioContext"
+    },
+    {
+      "source": "file:src/shared/components/audio/Visualizer.tsx",
+      "target": "file:src/app/providers/AudioProvider.tsx",
+      "type": "depends_on",
+      "weight": 0.6,
+      "label": "reads analyserNode from AudioProvider"
+    },
+    {
+      "source": "file:src/shared/components/layout/MiniPlayer.tsx",
+      "target": "file:src/modules/player/store/playerStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports usePlayerStore"
+    },
+    {
+      "source": "file:src/shared/components/layout/MiniPlayer.tsx",
+      "target": "file:src/modules/radio/store/radioStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useRadioStore"
+    },
+    {
+      "source": "file:src/shared/components/layout/MiniPlayer.tsx",
+      "target": "file:src/shared/components/audio/Visualizer.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports Visualizer"
+    },
+    {
+      "source": "file:src/shared/components/layout/MiniPlayer.tsx",
+      "target": "file:src/shared/utils/audioUtils.ts",
+      "type": "imports",
+      "weight": 0.6,
+      "label": "imports formatTime"
+    },
+    {
+      "source": "file:src/shared/components/layout/Sidebar.tsx",
+      "target": "file:src/app/providers/ThemeProvider.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useTheme"
+    },
+    {
+      "source": "file:src/shared/components/layout/TopBar.tsx",
+      "target": "file:src/shared/components/ui/Input.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports Input"
+    },
+    {
+      "source": "file:src/shared/hooks/useKeyboardShortcuts.ts",
+      "target": "file:src/modules/player/store/playerStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports usePlayerStore"
+    },
+    {
+      "source": "file:src/shared/hooks/useMediaSession.ts",
+      "target": "file:src/modules/player/store/playerStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports usePlayerStore"
+    },
+    {
+      "source": "file:src/shared/hooks/useMediaSession.ts",
+      "target": "file:src/modules/radio/store/radioStore.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "label": "imports useRadioStore"
+    },
+    {
+      "source": "function:src/shared/components/audio/Visualizer.tsx:Visualizer",
+      "target": "file:src/shared/components/audio/Visualizer.tsx",
+      "type": "contains",
+      "weight": 1,
+      "label": "defined in"
+    },
+    {
+      "source": "function:src/shared/components/layout/MiniPlayer.tsx:MiniPlayer",
+      "target": "file:src/shared/components/layout/MiniPlayer.tsx",
+      "type": "contains",
+      "weight": 1,
+      "label": "defined in"
+    },
+    {
+      "source": "function:src/shared/hooks/useKeyboardShortcuts.ts:useKeyboardShortcuts",
+      "target": "file:src/shared/hooks/useKeyboardShortcuts.ts",
+      "type": "contains",
+      "weight": 1,
+      "label": "defined in"
+    },
+    {
+      "source": "function:src/shared/hooks/useMediaSession.ts:useMediaSession",
+      "target": "file:src/shared/hooks/useMediaSession.ts",
+      "type": "contains",
+      "weight": 1,
+      "label": "defined in"
+    },
+    {
+      "source": "function:src/shared/utils/audioUtils.ts:formatTime",
+      "target": "file:src/shared/utils/audioUtils.ts",
+      "type": "contains",
+      "weight": 1,
+      "label": "defined in"
+    },
+    {
+      "source": "function:src/shared/utils/audioUtils.ts:getSupportedMimeType",
+      "target": "file:src/shared/utils/audioUtils.ts",
+      "type": "contains",
+      "weight": 1,
+      "label": "defined in"
+    },
+    {
+      "source": "function:src/shared/utils/audioUtils.ts:estimatedFileSizeMB",
+      "target": "file:src/shared/utils/audioUtils.ts",
+      "type": "contains",
+      "weight": 1,
+      "label": "defined in"
+    },
+    {
+      "source": "function:src/shared/utils/corsProxy.ts:checkStreamAvailability",
+      "target": "file:src/shared/utils/corsProxy.ts",
+      "type": "contains",
+      "weight": 1,
+      "label": "defined in"
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer:build-config",
+      "name": "Build & Config",
+      "description": "Build tooling, TypeScript compiler settings, Vite plugins, ESLint, and environment configuration",
+      "nodeIds": [
+        "config:package.json",
+        "config:tsconfig.json",
+        "config:tsconfig.app.json",
+        "config:tsconfig.node.json",
+        "file:vite.config.ts",
+        "file:vitest.config.ts",
+        "config:eslint.config.js",
+        "config:.env.example",
+        "config:.npmrc",
+        "file:config/plugins/index.ts",
+        "file:config/plugins/pwa.ts",
+        "file:config/plugins/react.ts",
+        "file:config/plugins/tailwind.ts"
+      ]
+    },
+    {
+      "id": "layer:documentation",
+      "name": "Documentation",
+      "description": "Project documentation, developer guides, planning docs, and design specifications",
+      "nodeIds": [
+        "document:README.md",
+        "document:CLAUDE.md",
+        "document:docs/superpowers/plans/2026-03-27-soundwave-optimization.md",
+        "document:docs/superpowers/specs/2026-03-27-soundwave-optimization-design.md"
+      ]
+    },
+    {
+      "id": "layer:application-shell",
+      "name": "Application Shell",
+      "description": "HTML entry point, React root mount, top-level app component, router, and global styles",
+      "nodeIds": [
+        "file:index.html",
+        "file:src/main.tsx",
+        "file:src/App.tsx",
+        "file:src/App.css",
+        "file:src/index.css",
+        "file:src/styles/globals.css",
+        "file:src/app/App.tsx",
+        "file:src/app/Router.tsx"
+      ]
+    },
+    {
+      "id": "layer:audio-infrastructure",
+      "name": "Audio Infrastructure",
+      "description": "Global context providers for Web Audio API, theming, and notifications — foundational services shared across all modules",
+      "nodeIds": [
+        "file:src/app/providers/AudioProvider.tsx",
+        "file:src/app/providers/ThemeProvider.tsx",
+        "file:src/app/providers/NotificationProvider.tsx"
+      ]
+    },
+    {
+      "id": "layer:design-system",
+      "name": "Design System",
+      "description": "Reusable UI primitives, layout shell components, and the shared audio visualizer",
+      "nodeIds": [
+        "file:src/shared/components/ui/Badge.tsx",
+        "file:src/shared/components/ui/Button.tsx",
+        "file:src/shared/components/ui/Input.tsx",
+        "file:src/shared/components/ui/Modal.tsx",
+        "file:src/shared/components/ui/Slider.tsx",
+        "file:src/shared/components/ui/Spinner.tsx",
+        "file:src/shared/components/layout/MiniPlayer.tsx",
+        "file:src/shared/components/layout/PageTransition.tsx",
+        "file:src/shared/components/layout/Sidebar.tsx",
+        "file:src/shared/components/layout/TopBar.tsx",
+        "file:src/shared/components/audio/Visualizer.tsx"
+      ]
+    },
+    {
+      "id": "layer:shared-services",
+      "name": "Shared Services",
+      "description": "Cross-module hooks and pure utility functions for keyboard shortcuts, media session, audio math, CORS proxying, and formatting",
+      "nodeIds": [
+        "file:src/shared/hooks/useKeyboardShortcuts.ts",
+        "file:src/shared/hooks/useMediaSession.ts",
+        "file:src/shared/utils/audioUtils.ts",
+        "file:src/shared/utils/corsProxy.ts",
+        "file:src/shared/utils/formatters.ts"
+      ]
+    },
+    {
+      "id": "layer:player-module",
+      "name": "Player Module",
+      "description": "Local file playback feature: components, audio engine hook, file-loading hook, and Zustand playback store",
+      "nodeIds": [
+        "file:src/modules/player/components/Equalizer.tsx",
+        "file:src/modules/player/components/LocalPlayer.tsx",
+        "file:src/modules/player/components/TrackList.tsx",
+        "file:src/modules/player/hooks/useAudioEngine.ts",
+        "file:src/modules/player/hooks/useLocalFiles.ts",
+        "file:src/modules/player/store/playerStore.ts"
+      ]
+    },
+    {
+      "id": "layer:radio-module",
+      "name": "Radio Module",
+      "description": "Internet radio feature: search and station components, streaming hooks, Radio Browser API client, Howler singleton, and Zustand radio store",
+      "nodeIds": [
+        "file:src/modules/radio/components/RadioSearch.tsx",
+        "file:src/modules/radio/components/SharePanel.tsx",
+        "file:src/modules/radio/components/StationCard.tsx",
+        "file:src/modules/radio/components/StationDetail.tsx",
+        "file:src/modules/radio/components/StationFilters.tsx",
+        "file:src/modules/radio/hooks/useRadioBrowser.ts",
+        "file:src/modules/radio/hooks/useStreamCheck.ts",
+        "file:src/modules/radio/services/radioBrowserApi.ts",
+        "file:src/modules/radio/services/radioPlayer.ts",
+        "file:src/modules/radio/store/radioStore.ts"
+      ]
+    },
+    {
+      "id": "layer:favorites-module",
+      "name": "Favorites Module",
+      "description": "IndexedDB-backed favorites feature: list component, Dexie database singleton, and Zustand favorites store",
+      "nodeIds": [
+        "file:src/modules/favorites/components/FavoritesList.tsx",
+        "file:src/modules/favorites/db/favoritesDb.ts",
+        "file:src/modules/favorites/store/favoritesStore.ts"
+      ]
+    },
+    {
+      "id": "layer:recorder-module",
+      "name": "Recorder Module",
+      "description": "Audio recording feature: MediaRecorder component with MP3 encoding, VU meter canvas component, and Zustand recorder store",
+      "nodeIds": [
+        "file:src/modules/recorder/components/Recorder.tsx",
+        "file:src/modules/recorder/components/VUMeter.tsx",
+        "file:src/modules/recorder/store/recorderStore.ts"
+      ]
+    },
+    {
+      "id": "layer:pages-routing",
+      "name": "Pages & Routing",
+      "description": "Lazy-loaded route wrapper pages that connect the router to feature modules",
+      "nodeIds": [
+        "file:src/pages/FavoritesPage.tsx",
+        "file:src/pages/PlayerPage.tsx",
+        "file:src/pages/RadioPage.tsx",
+        "file:src/pages/RecorderPage.tsx"
+      ]
+    },
+    {
+      "id": "layer:tests",
+      "name": "Tests",
+      "description": "Automated test files for the application",
+      "nodeIds": [
+        "file:src/__tests__/example.test.ts"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "Project Overview & Configuration",
+      "description": "Start with the high-level README and package.json to understand what SoundWave is, its tech stack, and key dependencies. This gives you the mental model before diving into code.",
+      "nodeIds": [
+        "document:README.md",
+        "config:package.json"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "Application Entry Point",
+      "description": "Trace how the app boots: main.tsx mounts React, App.tsx wraps the tree in all global providers, and Router.tsx sets up lazy-loaded routes. Understanding this chain shows you where every feature plugs in.",
+      "nodeIds": [
+        "file:src/main.tsx",
+        "file:src/app/App.tsx",
+        "file:src/app/Router.tsx"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "Global Providers — Theme & Notifications",
+      "description": "ThemeProvider and NotificationProvider are pure UI infrastructure that wrap the entire app. Studying them before the audio stack shows the pattern used for all providers and keeps concerns separate.",
+      "nodeIds": [
+        "file:src/app/providers/ThemeProvider.tsx",
+        "file:src/app/providers/NotificationProvider.tsx"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "Audio Context — The Heart of the App",
+      "description": "AudioProvider.tsx owns the single Web Audio API context and constructs the signal chain: masterGain → 10-band EQ → analyser node. Everything that makes sound ultimately flows through this provider, so understanding it is essential before exploring any playback feature.",
+      "nodeIds": [
+        "file:src/app/providers/AudioProvider.tsx"
+      ]
+    },
+    {
+      "order": 5,
+      "title": "Local Player — State, Engine & Files",
+      "description": "playerStore.ts holds Zustand state for the local player, useAudioEngine.ts bridges Howler.js to the Web Audio graph established in AudioProvider, and useLocalFiles.ts handles file-system access. Together these three files show the complete data-flow from a file on disk to audio output.",
+      "nodeIds": [
+        "file:src/modules/player/store/playerStore.ts",
+        "file:src/modules/player/hooks/useAudioEngine.ts",
+        "file:src/modules/player/hooks/useLocalFiles.ts"
+      ]
+    },
+    {
+      "order": 6,
+      "title": "Local Player — UI Components",
+      "description": "LocalPlayer.tsx is the main playback UI, TrackList.tsx renders the queue, and Equalizer.tsx exposes the 10-band EQ controls that write back into the AudioProvider graph. This step ties the previous state and engine work to visible components.",
+      "nodeIds": [
+        "file:src/modules/player/components/LocalPlayer.tsx",
+        "file:src/modules/player/components/TrackList.tsx",
+        "file:src/modules/player/components/Equalizer.tsx"
+      ]
+    },
+    {
+      "order": 7,
+      "title": "Internet Radio — API, Service & State",
+      "description": "radioBrowserApi.ts wraps the radio-browser.info REST API, radioPlayer.ts manages stream lifecycle, radioStore.ts holds Zustand state, and useRadioBrowser.ts + useStreamCheck.ts are the hooks that coordinate search and stream-health checks. This module demonstrates a network-first feature built on the same audio infrastructure.",
+      "nodeIds": [
+        "file:src/modules/radio/store/radioStore.ts",
+        "file:src/modules/radio/services/radioBrowserApi.ts",
+        "file:src/modules/radio/services/radioPlayer.ts",
+        "file:src/modules/radio/hooks/useRadioBrowser.ts"
+      ]
+    },
+    {
+      "order": 8,
+      "title": "Internet Radio — UI & Page",
+      "description": "RadioSearch.tsx, StationCard.tsx, and RadioPage.tsx form the radio feature's presentation layer. Seeing these alongside the previous step reinforces the module pattern: store → service → hooks → components → page.",
+      "nodeIds": [
+        "file:src/modules/radio/components/RadioSearch.tsx",
+        "file:src/modules/radio/components/StationCard.tsx",
+        "file:src/pages/RadioPage.tsx"
+      ]
+    },
+    {
+      "order": 9,
+      "title": "Favorites — IndexedDB Persistence",
+      "description": "favoritesDb.ts defines the Dexie singleton that persists favorites to IndexedDB, and favoritesStore.ts exposes that data through Zustand. This step shows how the app achieves offline-capable persistence without a backend.",
+      "nodeIds": [
+        "file:src/modules/favorites/db/favoritesDb.ts",
+        "file:src/modules/favorites/store/favoritesStore.ts"
+      ]
+    },
+    {
+      "order": 10,
+      "title": "Audio Recording",
+      "description": "Recorder.tsx encapsulates the MediaRecorder + lamejs MP3 encoding pipeline. It is a self-contained feature module that demonstrates how the app captures audio from the user's microphone and produces downloadable files.",
+      "nodeIds": [
+        "file:src/modules/recorder/components/Recorder.tsx"
+      ]
+    },
+    {
+      "order": 11,
+      "title": "Shared Audio UI & Layout",
+      "description": "Visualizer.tsx draws the frequency analyser canvas, MiniPlayer.tsx provides the persistent playback bar, and Sidebar.tsx handles navigation. These shared components are consumed by multiple modules and illustrate the design-system boundary.",
+      "nodeIds": [
+        "file:src/shared/components/audio/Visualizer.tsx",
+        "file:src/shared/components/layout/MiniPlayer.tsx",
+        "file:src/shared/components/layout/Sidebar.tsx"
+      ]
+    },
+    {
+      "order": 12,
+      "title": "Shared Hooks, Utilities & Build Config",
+      "description": "useKeyboardShortcuts.ts and useMediaSession.ts wire up OS-level media controls; audioUtils.ts centralises DSP helpers; vite.config.ts and config/plugins/pwa.ts show how the PWA service worker and modular Vite plugins are configured. This final step reveals the cross-cutting concerns that glue the whole project together.",
+      "nodeIds": [
+        "file:src/shared/hooks/useKeyboardShortcuts.ts",
+        "file:src/shared/hooks/useMediaSession.ts",
+        "file:src/shared/utils/audioUtils.ts",
+        "file:vite.config.ts",
+        "file:config/plugins/pwa.ts"
+      ]
+    }
+  ]
+}

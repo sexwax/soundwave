@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Lora:wght@400;500&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg-base: #080b12;
+  --bg-surface: #0f1521;
+  --bg-elevated: #161d2e;
+  --border-subtle: #1e2a3f;
+  --border-default: #2e3f5e;
+
+  --accent-primary: #00e5ff;
+  --accent-secondary: #7c3aed;
+  --accent-warning: #f59e0b;
+  --accent-success: #22c55e;
+  --accent-danger: #ef4444;
+
+  --text-primary: #e2eaf5;
+  --text-secondary: #6b7fa3;
+  --text-disabled: #3d4f6e;
+
+  --player-height: 80px;
+  --sidebar-width: 240px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --font-display: 'Syne', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-body: 'Lora', serif;
+}
+
+[data-theme="light"] {
+  --bg-base: #f5f5f0;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f0f0ea;
+  --border-subtle: #e0e0d8;
+  --border-default: #c8c8bc;
+  --accent-primary: #1a3a6e;
+  --accent-secondary: #5b21b6;
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a5568;
+  --text-disabled: #a0aec0;
+}
+
+[data-theme="neon"] {
+  --bg-base: #000000;
+  --bg-surface: #050505;
+  --bg-elevated: #0a0a0a;
+  --border-subtle: #0d2e0d;
+  --border-default: #1a4d1a;
+  --accent-primary: #00ff88;
+  --accent-secondary: #ff00ff;
+  --accent-warning: #ffff00;
+  --accent-success: #00ff88;
+  --text-primary: #e0ffe0;
+  --text-secondary: #80c080;
+  --text-disabled: #2a4a2a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+
+/* Marquee animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-text {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 12s linear infinite;
+}
+
+/* Pulse animation for REC button */
+@keyframes pulse-rec {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.pulse-rec {
+  animation: pulse-rec 1s ease-in-out infinite;
+}
