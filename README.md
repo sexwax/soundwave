@@ -48,6 +48,49 @@ npm run dev
 
 La app estará disponible en `http://localhost:5173`
 
+## Desplegar en Vercel
+
+### Opción 1: Deploy automático (recomendado)
+
+1. Ve a [vercel.com/new](https://vercel.com/new)
+2. Importa tu repositorio `sexwax/soundwave`
+3. Vercel detectará automáticamente que es un proyecto Vite
+4. Haz clic en **Deploy**
+
+### Opción 2: Deploy con CLI
+
+```bash
+# Instalar Vercel CLI
+npm i -g vercel
+
+# Iniciar sesión
+vercel login
+
+# Desplegar
+vercel
+```
+
+### Configuración automática
+
+El archivo `vercel.json` ya está configurado con:
+
+- Framework: Vite
+- Build: `npm run build`
+- Output: `dist/`
+- Preview: `npm run preview`
+
+### Variables de Entorno en Vercel
+
+Si usas las variables opcionales, configúralas en Vercel:
+
+1. Ve a tu proyecto en Vercel
+2. **Settings** → **Environment Variables**
+3. Agrega:
+   - `VITE_LASTFM_API_KEY`
+   - `VITE_CORS_PROXY_URL`
+   - `VITE_APP_URL`
+4. Vuelve a desplegar para aplicar los cambios
+
 ## Comandos Disponibles
 
 ```bash
