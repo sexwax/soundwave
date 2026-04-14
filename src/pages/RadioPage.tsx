@@ -122,7 +122,7 @@ export default function RadioPage() {
 
   return (
     <PageTransition>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, height: '100%' }}>
+    <div className="radio-page" style={{ display: 'flex', flexDirection: 'column', gap: 16, height: '100%' }}>
       <Helmet>
         <title>{currentStation ? `${currentStation.name} — SoundWave` : 'Radio — SoundWave'}</title>
         <meta property="og:title" content={currentStation ? currentStation.name : 'Radio en línea — SoundWave'} />
@@ -176,14 +176,16 @@ export default function RadioPage() {
             </p>
           </div>
         ) : (
-          stations.map((station, i) => (
-            <StationCard
-              key={station.stationuuid}
-              station={station}
-              index={i}
-              onClick={() => { setSelectedStation(station); playStation(station); }}
-            />
-          ))
+          <div className="station-grid">
+            {stations.map((station, i) => (
+              <StationCard
+                key={station.stationuuid}
+                station={station}
+                index={i}
+                onClick={() => { setSelectedStation(station); playStation(station); }}
+              />
+            ))}
+          </div>
         )}
       </div>
 

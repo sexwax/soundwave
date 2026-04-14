@@ -38,7 +38,7 @@ export function FavoritesList() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Actions */}
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div className="favorites-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <Button variant="outline" size="sm" onClick={exportJson}>📥 Exportar JSON</Button>
         <Button variant="outline" size="sm" onClick={exportM3U}>📥 Exportar M3U</Button>
       </div>

@@ -114,47 +114,117 @@ h1, h2, h3, h4 {
   animation: pulse-rec 1s ease-in-out infinite;
 }
 
-/* Responsive breakpoints */
-@media (max-width: 768px) {
-  :root {
-    --sidebar-width: 0px;
-    --player-height: 72px;
-  }
-
-  body {
-    font-size: 14px;
-  }
-
-  h1 { font-size: clamp(1.5rem, 4vw, 2rem); }
-  h2 { font-size: clamp(1.25rem, 3vw, 1.5rem); }
-}
-
-@media (max-width: 480px) {
-  :root {
-    --font-body: 13px;
-  }
-}
+/* =============================================
+   RESPONSIVE BREAKPOINTS
+   - Mobile: ≤ 480px
+   - Tablet: 481px - 768px
+   - Desktop: ≥ 769px
+   ============================================= */
 
 /* Mobile-first utility classes */
 .desktop-only {
   display: none;
+}
+.tablet-up {
+  display: none;
+}
+.mobile-only {
+  display: block;
+}
+
+@media (min-width: 481px) {
+  .mobile-only {
+    display: none !important;
+  }
+  .tablet-up {
+    display: block;
+  }
 }
 
 @media (min-width: 769px) {
   .desktop-only {
     display: block;
   }
-  .mobile-only {
-    display: none !important;
+  .tablet-only {
+    display: none;
   }
 }
 
-@media (max-width: 768px) {
-  .mobile-only {
-    display: block;
+/* Tablet: 481px - 768px */
+@media (min-width: 481px) and (max-width: 768px) {
+  :root {
+    --sidebar-width: 200px;
+    --player-height: 64px;
+  }
+
+  main {
+    padding: 56px 20px 72px !important;
+  }
+
+  /* Station grid on tablet */
+  .station-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
+
+/* Mobile: ≤ 480px */
+@media (max-width: 480px) {
+  :root {
+    --sidebar-width: 0px;
+    --player-height: 56px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+  }
+
+  body {
+    font-size: 13px;
+  }
+
+  h1 { font-size: clamp(1.25rem, 5vw, 1.75rem); }
+  h2 { font-size: clamp(1.1rem, 4vw, 1.4rem); }
+  h3 { font-size: clamp(1rem, 3vw, 1.2rem); }
+
+  main {
+    padding: 56px 12px 64px !important;
   }
 
   /* Mobile sidebar slide-in */
+  aside {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1002;
+    width: 260px;
+    max-width: 80vw;
+  }
+
+  aside.sidebar-open,
+  aside:has(.sidebar-open) {
+    transform: translateX(0);
+  }
+
+  /* Mobile miniplayer compact */
+  .miniplayer {
+    padding: 0 8px !important;
+    height: 56px !important;
+  }
+
+  /* Station list full width on mobile */
+  .station-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+/* Tablet & Mobile: ≤ 768px */
+@media (max-width: 768px) {
+  /* Sidebar slide-in for both tablet and mobile */
   aside {
     position: fixed;
     left: 0;
@@ -172,18 +242,130 @@ h1, h2, h3, h4 {
     transform: translateX(0);
   }
 
-  /* Adjust main content on mobile */
-  main {
-    padding: 60px 16px 80px !important;
-  }
-
-  /* Mobile miniplayer compact */
-  .miniplayer {
-    padding: 0 8px !important;
-    height: 64px !important;
-  }
-
+  /* Hide miniplayer extra controls */
   .miniplayer > div:last-child {
     display: none;
+  }
+
+  /* Search form wraps on tablet */
+  .search-form {
+    flex-wrap: wrap;
+  }
+
+  .search-form input {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .search-form button {
+    flex: 1;
+    min-width: calc(50% - 4px);
+  }
+
+  /* Station grid on tablet */
+  .station-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
+
+/* Mobile specific: ≤ 480px */
+@media (max-width: 480px) {
+  /* Search form stacked on mobile */
+  .search-form {
+    flex-direction: column;
+  }
+
+  .search-form input,
+  .search-form button {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  /* Single column stations on mobile */
+  .station-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* Favorites actions stacked */
+  .favorites-actions {
+    flex-direction: column;
+  }
+
+  .favorites-actions button {
+    width: 100%;
+  }
+
+  /* TopBar adjustments */
+  header {
+    padding: 0 12px !important;
+    height: 52px !important;
+  }
+
+  header input {
+    font-size: 13px;
+  }
+
+  /* Modal fullscreen on mobile */
+  .modal-content {
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+  }
+}
+
+/* Touch-friendly targets on mobile */
+@media (max-width: 768px) {
+  button, a {
+    min-height: 44px;
+  }
+
+  /* Larger tap targets for station cards */
+  .station-card {
+    padding: 12px !important;
+  }
+
+  /* Prevent zoom on input focus */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+  /* Player toolbar wraps on tablet/mobile */
+  .player-toolbar {
+    gap: 6px !important;
+  }
+
+  .player-toolbar .toolbar-btn {
+    flex: 1;
+    min-width: calc(50% - 3px);
+  }
+
+  /* Visualizer responsive */
+  .visualizer-container {
+    height: 80px;
+  }
+}
+
+/* Mobile: ≤ 480px - Player adjustments */
+@media (max-width: 480px) {
+  .player-toolbar {
+    flex-direction: column;
+  }
+
+  .player-toolbar .toolbar-btn {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .visualizer-container {
+    height: 60px;
+  }
+
+  /* EQ slider full width */
+  .equalizer-container {
+    width: 100%;
+    overflow-x: auto;
   }
 }

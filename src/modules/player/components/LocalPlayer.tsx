@@ -14,13 +14,13 @@ export function LocalPlayer() {
   const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
       {/* Toolbar */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <Button onClick={openDirectory} disabled={isIndexing}>
+      <div className="player-toolbar" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <Button onClick={openDirectory} disabled={isIndexing} className="toolbar-btn">
           📁 {isIndexing ? 'Indexando...' : 'Abrir carpeta'}
         </Button>
-        <Button onClick={openFiles} variant="outline">
+        <Button onClick={openFiles} variant="outline" className="toolbar-btn">
           🎵 Abrir archivos
         </Button>
         <Button
@@ -28,6 +28,7 @@ export function LocalPlayer() {
           variant={isShuffled ? 'primary' : 'ghost'}
           size="sm"
           aria-label="Aleatorio"
+          className="toolbar-btn"
         >
           🔀 Aleatorio
         </Button>
@@ -35,16 +36,18 @@ export function LocalPlayer() {
           onClick={() => setShowEq(!showEq)}
           variant={showEq ? 'primary' : 'ghost'}
           size="sm"
+          className="toolbar-btn"
         >
           🎚️ EQ
         </Button>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           {['bars', 'wave', 'circular'].map((m) => (
             <Button
               key={m}
               onClick={() => setVisMode(m as 'bars' | 'wave' | 'circular')}
               variant={visMode === m ? 'primary' : 'ghost'}
               size="sm"
+              className="toolbar-btn"
             >
               {m === 'bars' ? '▌▌▌' : m === 'wave' ? '〜' : '◎'}
             </Button>
@@ -53,7 +56,7 @@ export function LocalPlayer() {
       </div>
 
       {/* Visualizer */}
-      <div style={{ background: 'var(--bg-elevated)', borderRadius: 12, overflow: 'hidden', padding: 4 }}>
+      <div className="visualizer-container" style={{ background: 'var(--bg-elevated)', borderRadius: 12, overflow: 'hidden', padding: 4 }}>
         <Visualizer width={800} height={120} mode={visMode} />
       </div>
 

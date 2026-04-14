@@ -13,27 +13,29 @@ export function TopBar() {
 
   return (
     <header
+      className="topbar"
       style={{
         height: 56,
         background: 'var(--bg-surface)',
         borderBottom: '1px solid var(--border-subtle)',
         display: 'flex',
         alignItems: 'center',
-        padding: '0 20px',
-        gap: 16,
+        padding: '0 16px',
+        gap: 12,
         flexShrink: 0,
+        position: 'relative',
       }}
     >
-      <form onSubmit={onSearch} style={{ flex: 1, maxWidth: 400 }}>
+      <form onSubmit={onSearch} style={{ flex: 1, maxWidth: 400, display: 'flex', gap: 8 }}>
         <Input
-          placeholder="Buscar emisoras, géneros..."
+          placeholder="Buscar emisoras..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          style={{ width: '100%' }}
+          style={{ flex: 1 }}
           aria-label="Búsqueda global"
         />
       </form>
-      <div style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-disabled)', fontFamily: 'var(--font-mono)' }}>
+      <div className="desktop-only" style={{ fontSize: 11, color: 'var(--text-disabled)', fontFamily: 'var(--font-mono)' }}>
         SoundWave v1.0
       </div>
     </header>

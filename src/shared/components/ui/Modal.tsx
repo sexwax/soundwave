@@ -26,14 +26,15 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
+        className="modal-content"
         style={{
           background: 'var(--bg-elevated)',
           border: '1px solid var(--border-default)',
           borderRadius: 'var(--radius-lg)',
           padding: 24,
-          maxWidth: 600,
           width: '90%',
-          maxHeight: '85vh',
+          maxWidth: 'min(600px, 95vw)',
+          maxHeight: 'min(85vh, 800px)',
           overflowY: 'auto',
           position: 'relative',
         }}

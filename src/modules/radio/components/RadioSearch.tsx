@@ -28,12 +28,12 @@ export function RadioSearch() {
 
   return (
     <div>
-      <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+      <form onSubmit={handleSearch} className="search-form" style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
         <Input
           placeholder="Buscar emisoras..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ flex: 1 }}
+          style={{ flex: 1, minWidth: 150 }}
           aria-label="Buscar emisoras"
         />
         <Button type="submit" disabled={isLoading}>
