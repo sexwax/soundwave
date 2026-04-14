@@ -105,7 +105,7 @@ export function useLocalFiles() {
             input.oncancel = () => resolve([]);
             input.click();
           });
-          files = result.filter(isAudioFile);
+          files = result.filter(f => isAudioFile(f.name));
         } catch (err) {
           console.warn('File picker failed:', err);
           setIsIndexing(false);
