@@ -78,10 +78,43 @@ export function useLocalFiles() {
       let files: File[] = [];
 
       if ('showDirectoryPicker' in window) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const dirHandle = await (window as any).showDirectoryPicker();
-        files = await readFilesFromHandle(dirHandle);
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const dirHandle = await (window as any).showDirectoryPicker();
+          files = await readFilesFromHandle(dirHandle);
+        } catch (err) {
+          // User cancelled or permission denied
+          console.warn('Directory picker failed:', err);
+          setIsIndexing(false);
+          return;
+        }
       } else {
+        // Fallback: use file input with webkitdirectory attribute
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.multiple = true;
+        // @ts-ignore - webkitdirectory is non-standard but widely supported
+        input.webkitDirectory = true;
+        input.accept = AUDIO_EXTENSIONS.join(',');
+
+        try {
+          const result = await new Promise<File[]>((resolve) => {
+            input.onchange = () => {
+              resolve(Array.from(input.files ?? []));
+            };
+            input.oncancel = () => resolve([]);
+            input.click();
+          });
+          files = result.filter(isAudioFile);
+        } catch (err) {
+          console.warn('File picker failed:', err);
+          setIsIndexing(false);
+          return;
+        }
+      }
+
+      if (files.length === 0) {
+        setIsIndexing(false);
         return;
       }
 

@@ -1,15 +1,18 @@
 import { useCallback, useState } from 'react';
-import { checkStreamAvailability } from '../../../shared/utils/corsProxy';
+import { proxify } from '../../../shared/utils/corsProxy';
 
 export function useStreamCheck() {
   const [checking, setChecking] = useState(false);
 
   const check = useCallback(async (url: string): Promise<boolean> => {
-    setChecking(true);
+    // Skip HEAD check - many radio streams don't support HEAD requests
+    // Instead, we try to play directly and handle errors via Howler callbacks
+    // Just validate it's a valid URL
     try {
-      return await checkStreamAvailability(url, 3000);
-    } finally {
-      setChecking(false);
+      new URL(url);
+      return true;
+    } catch {
+      return false;
     }
   }, []);
 

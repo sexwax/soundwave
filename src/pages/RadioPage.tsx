@@ -52,25 +52,49 @@ export default function RadioPage() {
       setRadioHowl(null);
     }
 
-    // Check availability
-    const available = await check(url);
-    if (!available) {
+    // Check URL validity
+    const valid = await check(url);
+    if (!valid) {
       setStatus('offline');
       return;
     }
 
     radioBrowserApi.registerClick(station.stationuuid);
 
-    const tryPlay = (streamUrl: string, retries = 3) => {
+    // Try proxy first in production, then direct URL
+    const tryUrls = [
+      proxify(url),
+      url,
+    ].filter((u, i, arr) => u !== arr[i - 1]); // dedupe if no proxy
+
+    const tryPlay = (urls: string[], retries = 0) => {
+      if (urls.length === 0) {
+        setStatus('error');
+        return;
+      }
+
+      const [currentUrl, ...rest] = urls;
+
       const howl = new Howl({
-        src: [streamUrl],
+        src: [currentUrl],
         html5: true,
         format: station.hls ? ['m3u8'] : ['mp3', 'aac', 'ogg'],
-        onplay: () => setStatus('playing'),
-        onloaderror: (_: any, err: any) => {
-          console.error('Stream error', err);
-          if (retries > 0) {
-            setTimeout(() => tryPlay(proxify(streamUrl), retries - 1), 1000 * (4 - retries));
+        onplay: () => {
+          console.log('Stream playing:', currentUrl);
+          setStatus('playing');
+        },
+        onloaderror: (err) => {
+          console.error('Stream load error:', currentUrl, err);
+          if (rest.length > 0) {
+            setTimeout(() => tryPlay(rest), 500);
+          } else {
+            setStatus('error');
+          }
+        },
+        onplayerror: (err) => {
+          console.error('Stream play error:', currentUrl, err);
+          if (rest.length > 0) {
+            setTimeout(() => tryPlay(rest), 500);
           } else {
             setStatus('error');
           }
@@ -81,7 +105,7 @@ export default function RadioPage() {
       howl.play();
     };
 
-    tryPlay(url);
+    tryPlay(tryUrls);
   };
 
   // Handle deep link to specific station

@@ -90,11 +90,6 @@ export function LocalPlayer() {
             <p style={{ fontSize: 12 }}>
               Formatos: MP3, FLAC, WAV, OGG, OPUS, AAC, M4A
             </p>
-            {!('showDirectoryPicker' in window) && (
-              <p style={{ color: 'var(--accent-warning)', fontSize: 12, textAlign: 'center', maxWidth: 400 }}>
-                ⚠️ Tu navegador no soporta acceso a carpetas. Usa Chrome o Edge para esta función.
-              </p>
-            )}
           </div>
         ) : (
           <TrackList />
