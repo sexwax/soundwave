@@ -7,7 +7,7 @@ import { FileTree } from './FileTree';
 import { Button } from '../../../shared/components/ui/Button';
 import { Visualizer } from '../../../shared/components/audio/Visualizer';
 import { Slider } from '../../../shared/components/ui/Slider';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { formatTime } from '../../../shared/utils/formatters';
 import type { LocalTrack } from '../../favorites/db/favoritesDb';
 
@@ -24,6 +24,35 @@ export function LocalPlayer() {
   const track = currentTrack();
   const [showEq, setShowEq] = useState(false);
   const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
+  const [isSeeking, setIsSeeking] = useState(false);
+  const [tempTime, setTempTime] = useState<number | null>(null);
+  const prevTrackRef = useRef<string | null>(null);
+
+  // Reset seeking state when track changes
+  useEffect(() => {
+    const trackId = track?.filePath || null;
+    if (trackId !== prevTrackRef.current) {
+      prevTrackRef.current = trackId;
+      setIsSeeking(false);
+      setTempTime(null);
+    }
+  }, [track?.filePath]);
+
+  const handleSeekStart = () => {
+    setIsSeeking(true);
+    setTempTime(currentTime);
+  };
+
+  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTempTime(Number(e.target.value));
+  };
+
+  const handleSeekEnd = (e: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => {
+    const value = (e.target as HTMLInputElement).value;
+    setIsSeeking(false);
+    seek(Number(value));
+    setTempTime(null);
+  };
 
   const handleSelectTrack = (selectedTrack: LocalTrack) => {
     const index = queue.findIndex(t => t.filePath === selectedTrack.filePath);
@@ -128,19 +157,23 @@ export function LocalPlayer() {
             {/* Progress Bar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 40, textAlign: 'right' }}>
-                {formatTime(currentTime)}
+                {formatTime(isSeeking && tempTime !== null ? tempTime : currentTime)}
               </span>
               <input
                 type="range"
                 min={0}
                 max={duration || 100}
-                value={currentTime}
-                onChange={(e) => seek(Number(e.target.value))}
+                value={isSeeking && tempTime !== null ? tempTime : currentTime}
+                onMouseDown={handleSeekStart}
+                onTouchStart={handleSeekStart}
+                onChange={handleSeekChange}
+                onMouseUp={handleSeekEnd}
+                onTouchEnd={handleSeekEnd}
                 style={{
                   flex: 1,
-                  height: 4,
+                  height: 6,
                   background: 'var(--bg-surface)',
-                  borderRadius: 2,
+                  borderRadius: 3,
                   appearance: 'none',
                   cursor: 'pointer',
                 }}
