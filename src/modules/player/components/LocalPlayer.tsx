@@ -60,196 +60,222 @@ export function LocalPlayer() {
         >
           🎚️ EQ
         </Button>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          {['bars', 'wave', 'circular'].map((m) => (
-            <Button
-              key={m}
-              onClick={() => setVisMode(m as 'bars' | 'wave' | 'circular')}
-              variant={visMode === m ? 'primary' : 'ghost'}
-              size="sm"
-              className="toolbar-btn"
-            >
-              {m === 'bars' ? '▌▌▌' : m === 'wave' ? '〜' : '◎'}
-            </Button>
-          ))}
-        </div>
       </div>
 
-      {/* Playback Controls Panel */}
+      {/* Playback Controls Panel - Controls on left, Visualizer on right */}
       {queue.length > 0 && (
         <div className="playback-controls-panel" style={{
           background: 'var(--bg-elevated)',
           borderRadius: 12,
           padding: 16,
           display: 'flex',
-          flexDirection: 'column',
-          gap: 12,
+          gap: 16,
+          alignItems: 'stretch',
         }}>
-          {/* Now Playing Info */}
-          {track && (
+          {/* Left: Controls */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 }}>
+            {/* Now Playing Info */}
+            {track && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '8px 12px',
+                background: 'var(--bg-surface)',
+                borderRadius: 8,
+              }}>
+                {track.coverUrl ? (
+                  <img
+                    src={track.coverUrl}
+                    alt={track.album}
+                    style={{ width: 48, height: 48, borderRadius: 4, objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{
+                    width: 48, height: 48,
+                    background: 'var(--accent-primary)',
+                    borderRadius: 4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 24,
+                  }}>
+                    🎵
+                  </div>
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: 'var(--text-primary)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    {track.title}
+                  </div>
+                  <div style={{
+                    fontSize: 12,
+                    color: 'var(--text-secondary)',
+                  }}>
+                    {track.artist}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Progress Bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 40, textAlign: 'right' }}>
+                {formatTime(currentTime)}
+              </span>
+              <input
+                type="range"
+                min={0}
+                max={duration || 100}
+                value={currentTime}
+                onChange={(e) => seek(Number(e.target.value))}
+                style={{
+                  flex: 1,
+                  height: 4,
+                  background: 'var(--bg-surface)',
+                  borderRadius: 2,
+                  appearance: 'none',
+                  cursor: 'pointer',
+                }}
+                className="progress-slider"
+              />
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 40 }}>
+                {formatTime(duration)}
+              </span>
+            </div>
+
+            {/* Main Controls - Prev, Play/Pause, Next */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'flex-start',
               gap: 12,
-              padding: '8px 12px',
-              background: 'var(--bg-surface)',
-              borderRadius: 8,
+              paddingTop: 8,
             }}>
-              {track.coverUrl ? (
-                <img
-                  src={track.coverUrl}
-                  alt={track.album}
-                  style={{ width: 48, height: 48, borderRadius: 4, objectFit: 'cover' }}
+              {/* Previous */}
+              <Button
+                onClick={prevTrack}
+                variant="ghost"
+                size="sm"
+                aria-label="Anterior"
+                style={{ width: 44, height: 44, borderRadius: '50%' }}
+              >
+                ⏮
+              </Button>
+
+              {/* Play/Pause */}
+              <Button
+                onClick={() => setIsPlaying(!isPlaying)}
+                variant="primary"
+                size="sm"
+                aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
+                style={{ width: 56, height: 56, borderRadius: '50%', fontSize: 24 }}
+              >
+                {isPlaying ? '⏸' : '▶'}
+              </Button>
+
+              {/* Next */}
+              <Button
+                onClick={nextTrack}
+                variant="ghost"
+                size="sm"
+                aria-label="Siguiente"
+                style={{ width: 44, height: 44, borderRadius: '50%' }}
+              >
+                ⏭
+              </Button>
+
+              {/* Volume Control - inline */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                marginLeft: 12,
+                flex: 1,
+              }}>
+                <Button
+                  onClick={toggleMute}
+                  variant="ghost"
+                  size="sm"
+                  aria-label={isMuted ? 'Activar sonido' : 'Silenciar'}
+                  style={{ minWidth: 32, width: 36, height: 36, borderRadius: '50%' }}
+                >
+                  {isMuted || volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
+                </Button>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={isMuted ? 0 : volume}
+                  onChange={(e) => setVolume(Number(e.target.value))}
+                  style={{
+                    flex: 1,
+                    height: 4,
+                    background: 'var(--bg-surface)',
+                    borderRadius: 2,
+                    appearance: 'none',
+                    cursor: 'pointer',
+                  }}
+                  className="volume-slider"
                 />
-              ) : (
-                <div style={{
-                  width: 48, height: 48,
-                  background: 'var(--accent-primary)',
-                  borderRadius: 4,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 24,
-                }}>
-                  🎵
-                </div>
-              )}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: 'var(--text-primary)',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}>
-                  {track.title}
-                </div>
-                <div style={{
-                  fontSize: 12,
-                  color: 'var(--text-secondary)',
-                }}>
-                  {track.artist}
-                </div>
               </div>
             </div>
-          )}
-
-          {/* Progress Bar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 40, textAlign: 'right' }}>
-              {formatTime(currentTime)}
-            </span>
-            <input
-              type="range"
-              min={0}
-              max={duration || 100}
-              value={currentTime}
-              onChange={(e) => seek(Number(e.target.value))}
-              style={{
-                flex: 1,
-                height: 4,
-                background: 'var(--bg-surface)',
-                borderRadius: 2,
-                appearance: 'none',
-                cursor: 'pointer',
-              }}
-              className="progress-slider"
-            />
-            <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 40 }}>
-              {formatTime(duration)}
-            </span>
           </div>
 
-          {/* Main Controls */}
+          {/* Right: Visualizer */}
           <div style={{
+            width: 200,
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 16,
           }}>
-            {/* Previous */}
-            <Button
-              onClick={prevTrack}
-              variant="ghost"
-              size="sm"
-              aria-label="Anterior"
-              style={{ width: 40, height: 40, borderRadius: '50%' }}
-            >
-              ⏮
-            </Button>
-
-            {/* Play/Pause */}
-            <Button
-              onClick={() => setIsPlaying(!isPlaying)}
-              variant="primary"
-              size="sm"
-              aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
-              style={{ width: 56, height: 56, borderRadius: '50%', fontSize: 24 }}
-            >
-              {isPlaying ? '⏸' : '▶'}
-            </Button>
-
-            {/* Next */}
-            <Button
-              onClick={nextTrack}
-              variant="ghost"
-              size="sm"
-              aria-label="Siguiente"
-              style={{ width: 40, height: 40, borderRadius: '50%' }}
-            >
-              ⏭
-            </Button>
-          </div>
-
-          {/* Volume Control */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            maxWidth: 200,
-            margin: '0 auto',
-          }}>
-            <Button
-              onClick={toggleMute}
-              variant="ghost"
-              size="sm"
-              aria-label={isMuted ? 'Activar sonido' : 'Silenciar'}
-              style={{ minWidth: 32 }}
-            >
-              {isMuted || volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
-            </Button>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.01}
-              value={isMuted ? 0 : volume}
-              onChange={(e) => setVolume(Number(e.target.value))}
-              style={{
-                flex: 1,
-                height: 4,
-                background: 'var(--bg-surface)',
-                borderRadius: 2,
-                appearance: 'none',
-                cursor: 'pointer',
-              }}
-              className="volume-slider"
-            />
+            <div style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 11,
+              color: 'var(--text-secondary)',
+              marginBottom: 8,
+              textAlign: 'center',
+            }}>
+              Visualizador
+            </div>
+            <div style={{
+              background: 'var(--bg-surface)',
+              borderRadius: 8,
+              overflow: 'hidden',
+              border: '1px solid var(--border-subtle)',
+            }}>
+              <Visualizer width={180} height={140} mode={visMode} />
+            </div>
+            {/* Mode selector buttons below visualizer */}
+            <div style={{
+              display: 'flex',
+              gap: 4,
+              marginTop: 8,
+            }}>
+              {['bars', 'wave', 'circular'].map((m) => (
+                <Button
+                  key={m}
+                  onClick={() => setVisMode(m as 'bars' | 'wave' | 'circular')}
+                  variant={visMode === m ? 'primary' : 'ghost'}
+                  size="sm"
+                  style={{ padding: '2px 8px', fontSize: 10 }}
+                >
+                  {m === 'bars' ? '▌▌' : m === 'wave' ? '〜' : '◎'}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       )}
-
-      {/* File Tree - Shows folder structure when tracks are loaded */}
-      {queue.length > 0 && (
-        <FileTree tracks={queue} onSelectTrack={handleSelectTrack} />
-      )}
-
-      {/* Visualizer */}
-      <div className="visualizer-container" style={{ background: 'var(--bg-elevated)', borderRadius: 12, overflow: 'hidden', padding: 4 }}>
-        <Visualizer width={800} height={120} mode={visMode} />
-      </div>
 
       {/* EQ */}
       {showEq && <Equalizer />}
