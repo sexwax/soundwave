@@ -12,7 +12,7 @@ function formatTimeStable(seconds: number): string {
 
 export function MiniPlayer() {
   const {
-    volume, setVolume, isMuted, toggleMute,
+    volume, setVolume, isMuted, toggleMute, setMuted,
     currentTime, duration,
   } = usePlayerStore();
   const playerTrack = usePlayerStore((s) => s.currentTrack());
@@ -115,8 +115,15 @@ export function MiniPlayer() {
         {/* Volume */}
         <input
           type="range" min={0} max={1} step={0.01}
-          value={isMuted ? 0 : volume}
-          onChange={(e) => setVolume(Number(e.target.value))}
+          value={volume}
+          onChange={(e) => {
+            const newVolume = Number(e.target.value);
+            setVolume(newVolume);
+            // Unmute when user manually adjusts volume
+            if (newVolume > 0 && isMuted) {
+              setMuted(false);
+            }
+          }}
           style={{ width: 60, accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
           aria-label="Volumen"
         />
