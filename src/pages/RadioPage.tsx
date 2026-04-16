@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { useEffect, useState } from 'react';
 import { PageTransition } from '../shared/components/layout/PageTransition';
+import { Visualizer } from '../shared/components/audio/Visualizer';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { RadioSearch } from '../modules/radio/components/RadioSearch';
 import { StationCard } from '../modules/radio/components/StationCard';
@@ -27,6 +28,7 @@ export default function RadioPage() {
   const { check } = useStreamCheck();
   const [selectedStation, setSelectedStation] = useState<RadioStation | null>(null);
   const [showShare, setShowShare] = useState(false);
+  const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
 
   // Load top stations on mount
   useEffect(() => {
@@ -138,19 +140,96 @@ export default function RadioPage() {
       {/* Current station status */}
       {currentStation && (
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 12,
-          padding: '10px 16px', background: 'var(--bg-elevated)',
-          borderRadius: 12, border: `1px solid var(--accent-primary)33`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          padding: '12px 16px',
+          background: 'var(--bg-elevated)',
+          borderRadius: 12,
+          border: `1px solid var(--accent-primary)33`,
         }}>
           <span style={{ fontSize: 20 }}>
             {status === 'playing' ? '🔊' : '⏳'}
           </span>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{currentStation.name}</div>
             <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
               {status}
             </div>
           </div>
+
+          {/* Play/Pause for radio */}
+          <button
+            onClick={() => setIsPlaying(!useRadioStore.getState().isPlaying)}
+            style={{
+              background: 'var(--accent-primary)',
+              border: 'none',
+              color: 'var(--bg-base)',
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              cursor: 'pointer',
+              fontSize: 16,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            aria-label={status === 'playing' ? 'Pausar' : 'Reproducir'}
+          >
+            {status === 'playing' ? '⏸' : '▶'}
+          </button>
+
+          {/* Visualizer */}
+          <div style={{ width: 120 }}>
+            <Visualizer width={120} height={40} mode={visMode} compact />
+          </div>
+
+          {/* Vis mode selector */}
+          <div style={{ display: 'flex', gap: 2 }}>
+            <button
+              onClick={() => setVisMode('bars')}
+              style={{
+                background: visMode === 'bars' ? 'var(--accent-primary)' : 'var(--bg-base)',
+                border: '1px solid var(--border-subtle)',
+                color: visMode === 'bars' ? 'var(--bg-base)' : 'var(--text-secondary)',
+                borderRadius: 4,
+                padding: '2px 6px',
+                cursor: 'pointer',
+                fontSize: 10,
+              }}
+            >
+              ▌▌▌
+            </button>
+            <button
+              onClick={() => setVisMode('wave')}
+              style={{
+                background: visMode === 'wave' ? 'var(--accent-primary)' : 'var(--bg-base)',
+                border: '1px solid var(--border-subtle)',
+                color: visMode === 'wave' ? 'var(--bg-base)' : 'var(--text-secondary)',
+                borderRadius: 4,
+                padding: '2px 6px',
+                cursor: 'pointer',
+                fontSize: 10,
+              }}
+            >
+              〜〜
+            </button>
+            <button
+              onClick={() => setVisMode('circular')}
+              style={{
+                background: visMode === 'circular' ? 'var(--accent-primary)' : 'var(--bg-base)',
+                border: '1px solid var(--border-subtle)',
+                color: visMode === 'circular' ? 'var(--bg-base)' : 'var(--text-secondary)',
+                borderRadius: 4,
+                padding: '2px 6px',
+                cursor: 'pointer',
+                fontSize: 10,
+              }}
+            >
+              ◎
+            </button>
+          </div>
+
           <button
             onClick={() => setShowShare(true)}
             style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 12 }}

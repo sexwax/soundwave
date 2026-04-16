@@ -6,6 +6,7 @@ import { Equalizer } from './Equalizer';
 import { FileTree } from './FileTree';
 import { Button } from '../../../shared/components/ui/Button';
 import { Slider } from '../../../shared/components/ui/Slider';
+import { Visualizer } from '../../../shared/components/audio/Visualizer';
 import { useState } from 'react';
 import { formatTime } from '../../../shared/utils/formatters';
 import type { LocalTrack } from '../../favorites/db/favoritesDb';
@@ -18,10 +19,11 @@ export function LocalPlayer() {
     setCurrentIndex, setIsPlaying,
     currentTime, duration,
     volume, setVolume, isMuted, toggleMute,
-    currentTrack
+    currentTrack, isPlaying, nextTrack, prevTrack
   } = usePlayerStore();
   const track = currentTrack();
   const [showEq, setShowEq] = useState(false);
+  const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
 
   const handleSelectTrack = (selectedTrack: LocalTrack) => {
     const index = queue.findIndex(t => t.filePath === selectedTrack.filePath);
@@ -182,8 +184,81 @@ export function LocalPlayer() {
                 className="volume-slider"
               />
             </div>
+
+            {/* Transport Controls */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              marginTop: 8,
+            }}>
+              <Button
+                onClick={prevTrack}
+                variant="ghost"
+                size="sm"
+                aria-label="Anterior"
+                style={{ minWidth: 40, fontSize: 18 }}
+              >
+                ⏮
+              </Button>
+              <Button
+                onClick={() => setIsPlaying(!isPlaying)}
+                variant="primary"
+                size="sm"
+                aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
+                style={{ minWidth: 48, height: 48, borderRadius: '50%', fontSize: 18 }}
+              >
+                {isPlaying ? '⏸' : '▶'}
+              </Button>
+              <Button
+                onClick={nextTrack}
+                variant="ghost"
+                size="sm"
+                aria-label="Siguiente"
+                style={{ minWidth: 40, fontSize: 18 }}
+              >
+                ⏭
+              </Button>
+            </div>
           </div>
 
+          {/* Right: Visualizer */}
+          <div style={{
+            width: 200,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 8,
+          }}>
+            <Visualizer width={200} height={80} mode={visMode} />
+            <div style={{ display: 'flex', gap: 4 }}>
+              <Button
+                onClick={() => setVisMode('bars')}
+                variant={visMode === 'bars' ? 'primary' : 'ghost'}
+                size="sm"
+                style={{ fontSize: 10, padding: '2px 6px' }}
+              >
+                ▌▌▌
+              </Button>
+              <Button
+                onClick={() => setVisMode('wave')}
+                variant={visMode === 'wave' ? 'primary' : 'ghost'}
+                size="sm"
+                style={{ fontSize: 10, padding: '2px 6px' }}
+              >
+                〜〜
+              </Button>
+              <Button
+                onClick={() => setVisMode('circular')}
+                variant={visMode === 'circular' ? 'primary' : 'ghost'}
+                size="sm"
+                style={{ fontSize: 10, padding: '2px 6px' }}
+              >
+                ◎
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 
