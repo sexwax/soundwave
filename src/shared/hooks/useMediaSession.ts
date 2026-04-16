@@ -4,8 +4,13 @@ import { useRadioStore } from '../../modules/radio/store/radioStore';
 
 export function useMediaSession() {
   const { nextTrack, prevTrack, setIsPlaying, isPlaying } = usePlayerStore();
+  const { setIsPlaying: setRadioIsPlaying } = useRadioStore();
   const playerTrack = usePlayerStore((s) => s.currentTrack());
   const radioStation = useRadioStore((s) => s.currentStation);
+  const radioIsPlaying = useRadioStore((s) => s.isPlaying);
+
+  // Determine which player is active
+  const isRadioActive = !!radioStation;
 
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
@@ -21,9 +26,27 @@ export function useMediaSession() {
       artwork: artwork ? [{ src: artwork, sizes: '512x512' }] : [],
     });
 
-    navigator.mediaSession.setActionHandler('play', () => setIsPlaying(true));
-    navigator.mediaSession.setActionHandler('pause', () => setIsPlaying(false));
-    navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
-    navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
-  }, [playerTrack, radioStation, isPlaying, nextTrack, prevTrack, setIsPlaying]);
+    // Use correct player based on what's active
+    navigator.mediaSession.setActionHandler('play', () => {
+      if (isRadioActive) {
+        setRadioIsPlaying(true);
+      } else {
+        setIsPlaying(true);
+      }
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+      if (isRadioActive) {
+        setRadioIsPlaying(false);
+      } else {
+        setIsPlaying(false);
+      }
+    });
+    // Previous/next only for local player
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      if (!isRadioActive) prevTrack();
+    });
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      if (!isRadioActive) nextTrack();
+    });
+  }, [playerTrack, radioStation, isRadioActive, isPlaying, radioIsPlaying, nextTrack, prevTrack, setIsPlaying, setRadioIsPlaying]);
 }
