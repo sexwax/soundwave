@@ -5,7 +5,6 @@ import { TrackList } from './TrackList';
 import { Equalizer } from './Equalizer';
 import { FileTree } from './FileTree';
 import { Button } from '../../../shared/components/ui/Button';
-import { Visualizer } from '../../../shared/components/audio/Visualizer';
 import { Slider } from '../../../shared/components/ui/Slider';
 import { useState } from 'react';
 import { formatTime } from '../../../shared/utils/formatters';
@@ -16,14 +15,13 @@ export function LocalPlayer() {
   const { seek } = useAudioEngine();
   const {
     queue, isShuffled, toggleShuffle, crossfadeDuration, setCrossfade,
-    isPlaying, setIsPlaying, nextTrack, prevTrack, setCurrentIndex,
+    setCurrentIndex, setIsPlaying,
     currentTime, duration,
     volume, setVolume, isMuted, toggleMute,
     currentTrack
   } = usePlayerStore();
   const track = currentTrack();
   const [showEq, setShowEq] = useState(false);
-  const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
 
   const handleSelectTrack = (selectedTrack: LocalTrack) => {
     const index = queue.findIndex(t => t.filePath === selectedTrack.filePath);
@@ -151,129 +149,41 @@ export function LocalPlayer() {
               </span>
             </div>
 
-            {/* Main Controls - Prev, Play/Pause, Next */}
+            {/* Volume Control */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'flex-start',
-              gap: 12,
-              paddingTop: 8,
+              gap: 8,
             }}>
-              {/* Previous */}
               <Button
-                onClick={prevTrack}
+                onClick={toggleMute}
                 variant="ghost"
                 size="sm"
-                aria-label="Anterior"
-                style={{ width: 44, height: 44, borderRadius: '50%' }}
+                aria-label={isMuted ? 'Activar sonido' : 'Silenciar'}
+                style={{ minWidth: 32 }}
               >
-                ⏮
+                {isMuted || volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
               </Button>
-
-              {/* Play/Pause */}
-              <Button
-                onClick={() => setIsPlaying(!isPlaying)}
-                variant="primary"
-                size="sm"
-                aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
-                style={{ width: 56, height: 56, borderRadius: '50%', fontSize: 24 }}
-              >
-                {isPlaying ? '⏸' : '▶'}
-              </Button>
-
-              {/* Next */}
-              <Button
-                onClick={nextTrack}
-                variant="ghost"
-                size="sm"
-                aria-label="Siguiente"
-                style={{ width: 44, height: 44, borderRadius: '50%' }}
-              >
-                ⏭
-              </Button>
-
-              {/* Volume Control - inline */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                marginLeft: 12,
-                flex: 1,
-              }}>
-                <Button
-                  onClick={toggleMute}
-                  variant="ghost"
-                  size="sm"
-                  aria-label={isMuted ? 'Activar sonido' : 'Silenciar'}
-                  style={{ minWidth: 32, width: 36, height: 36, borderRadius: '50%' }}
-                >
-                  {isMuted || volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
-                </Button>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={isMuted ? 0 : volume}
-                  onChange={(e) => setVolume(Number(e.target.value))}
-                  style={{
-                    flex: 1,
-                    height: 4,
-                    background: 'var(--bg-surface)',
-                    borderRadius: 2,
-                    appearance: 'none',
-                    cursor: 'pointer',
-                  }}
-                  className="volume-slider"
-                />
-              </div>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={isMuted ? 0 : volume}
+                onChange={(e) => setVolume(Number(e.target.value))}
+                style={{
+                  flex: 1,
+                  height: 4,
+                  background: 'var(--bg-surface)',
+                  borderRadius: 2,
+                  appearance: 'none',
+                  cursor: 'pointer',
+                }}
+                className="volume-slider"
+              />
             </div>
           </div>
 
-          {/* Right: Visualizer */}
-          <div style={{
-            width: 200,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <div style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 11,
-              color: 'var(--text-secondary)',
-              marginBottom: 8,
-              textAlign: 'center',
-            }}>
-              Visualizador
-            </div>
-            <div style={{
-              background: 'var(--bg-surface)',
-              borderRadius: 8,
-              overflow: 'hidden',
-              border: '1px solid var(--border-subtle)',
-            }}>
-              <Visualizer width={180} height={140} mode={visMode} />
-            </div>
-            {/* Mode selector buttons below visualizer */}
-            <div style={{
-              display: 'flex',
-              gap: 4,
-              marginTop: 8,
-            }}>
-              {['bars', 'wave', 'circular'].map((m) => (
-                <Button
-                  key={m}
-                  onClick={() => setVisMode(m as 'bars' | 'wave' | 'circular')}
-                  variant={visMode === m ? 'primary' : 'ghost'}
-                  size="sm"
-                  style={{ padding: '2px 8px', fontSize: 10 }}
-                >
-                  {m === 'bars' ? '▌▌' : m === 'wave' ? '〜' : '◎'}
-                </Button>
-              ))}
-            </div>
-          </div>
         </div>
       )}
 
