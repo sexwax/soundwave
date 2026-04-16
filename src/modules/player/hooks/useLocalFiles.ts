@@ -52,6 +52,23 @@ async function parseTrack(file: File): Promise<LocalTrack> {
     // Fall back to filename-derived values — already set above
   }
 
+  // Fallback: use HTML5 Audio to get duration if metadata parsing failed
+  if (duration <= 0) {
+    duration = await new Promise<number>((resolve) => {
+      const audio = new Audio();
+      const url = URL.createObjectURL(file);
+      audio.addEventListener('loadedmetadata', () => {
+        resolve(audio.duration);
+        URL.revokeObjectURL(url);
+      }, { once: true });
+      audio.addEventListener('error', () => {
+        resolve(0);
+        URL.revokeObjectURL(url);
+      }, { once: true });
+      audio.src = url;
+    });
+  }
+
   registerFile(filePath, file);
 
   return {
