@@ -103,7 +103,16 @@ export function MiniPlayer() {
 
       {/* Main play button */}
       <button
-        onClick={() => setIsPlaying(!active)}
+        onClick={() => {
+          if (isRadio) {
+            // For radio, toggle radio playback
+            const { setIsPlaying: setRadioIsPlaying } = useRadioStore.getState();
+            setRadioIsPlaying(!radioPlaying);
+          } else {
+            // For local player, toggle local playback
+            setIsPlaying(!isPlaying);
+          }
+        }}
         aria-label={active ? 'Pausar' : 'Reproducir'}
         style={{
           background: 'var(--accent-primary)', border: 'none', color: 'var(--bg-base)',
