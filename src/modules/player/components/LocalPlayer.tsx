@@ -7,7 +7,7 @@ import { FileTree } from './FileTree';
 import { Button } from '../../../shared/components/ui/Button';
 import { Visualizer } from '../../../shared/components/audio/Visualizer';
 import { Slider } from '../../../shared/components/ui/Slider';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { formatTime } from '../../../shared/utils/formatters';
 import type { LocalTrack } from '../../favorites/db/favoritesDb';
 
@@ -24,49 +24,6 @@ export function LocalPlayer() {
   const track = currentTrack();
   const [showEq, setShowEq] = useState(false);
   const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
-  const [isSeeking, setIsSeeking] = useState(false);
-  const [sliderValue, setSliderValue] = useState(0);
-  const prevTrackRef = useRef<string | null>(null);
-  const prevDurationRef = useRef<number>(0);
-
-  // Sync slider value with currentTime only when not seeking
-  useEffect(() => {
-    if (!isSeeking) {
-      setSliderValue(currentTime);
-    }
-  }, [currentTime, isSeeking]);
-
-  // Reset state when track changes
-  useEffect(() => {
-    const trackId = track?.filePath || null;
-    if (trackId !== prevTrackRef.current) {
-      prevTrackRef.current = trackId;
-      setIsSeeking(false);
-      setSliderValue(0);
-    }
-  }, [track?.filePath]);
-
-  // Reset when duration changes significantly (new track loaded)
-  useEffect(() => {
-    if (duration > 0 && Math.abs(duration - prevDurationRef.current) > 5) {
-      prevDurationRef.current = duration;
-      setSliderValue(0);
-    }
-  }, [duration]);
-
-  const handleSeekStart = () => {
-    setIsSeeking(true);
-  };
-
-  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSliderValue(Number(e.target.value));
-  };
-
-  const handleSeekEnd = (e: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => {
-    const value = (e.target as HTMLInputElement).value;
-    setIsSeeking(false);
-    seek(Number(value));
-  };
 
   const handleSelectTrack = (selectedTrack: LocalTrack) => {
     const index = queue.findIndex(t => t.filePath === selectedTrack.filePath);
@@ -171,25 +128,21 @@ export function LocalPlayer() {
             {/* Progress Bar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 40, textAlign: 'right' }}>
-                {formatTime(sliderValue)}
+                {formatTime(currentTime)}
               </span>
               <input
                 type="range"
                 min={0}
                 max={duration || 100}
-                value={Math.min(sliderValue, duration || 100)}
-                onMouseDown={handleSeekStart}
-                onTouchStart={handleSeekStart}
-                onChange={handleSeekChange}
-                onMouseUp={handleSeekEnd}
-                onTouchEnd={handleSeekEnd}
+                value={currentTime}
+                onChange={(e) => seek(Number(e.target.value))}
                 style={{
                   flex: 1,
-                  height: 6,
-                  background: 'var(--bg-surface)',
-                  borderRadius: 3,
-                  appearance: 'none',
+                  height: 4,
+                  background: 'transparent',
+                  borderRadius: 2,
                   cursor: 'pointer',
+                  accentColor: 'var(--accent-primary)',
                 }}
                 className="progress-slider"
               />

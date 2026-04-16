@@ -127,8 +127,11 @@ export function useAudioEngine() {
   }, [setCurrentTime]);
 
   const seek = useCallback((seconds: number) => {
-    howlRef.current?.seek(seconds);
-    setCurrentTime(seconds);
+    const howl = howlRef.current;
+    if (howl && howl.playing()) {
+      howl.seek(seconds);
+      setCurrentTime(seconds);
+    }
   }, [setCurrentTime]);
 
   return { seek, howlRef };
