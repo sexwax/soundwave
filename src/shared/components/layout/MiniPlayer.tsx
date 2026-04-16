@@ -1,6 +1,14 @@
+import { useMemo } from 'react';
 import { usePlayerStore } from '../../../modules/player/store/playerStore';
 import { useRadioStore } from '../../../modules/radio/store/radioStore';
 import { formatTime } from '../../utils/audioUtils';
+
+function formatTimeStable(seconds: number): string {
+  if (!seconds || !isFinite(seconds)) return '0:00';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
 
 export function MiniPlayer() {
   const {
@@ -15,7 +23,11 @@ export function MiniPlayer() {
   const artwork = playerTrack?.coverUrl ?? radioStation?.favicon;
   const isRadio = !playerTrack && !!radioStation;
 
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const progress = useMemo(() => (duration > 0 ? (currentTime / duration) * 100 : 0), [currentTime, duration]);
+  const timeDisplay = useMemo(
+    () => ({ current: formatTimeStable(currentTime), total: formatTimeStable(duration) }),
+    [currentTime, duration]
+  );
 
   return (
     <footer
