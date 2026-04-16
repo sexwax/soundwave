@@ -4,18 +4,16 @@ import { formatTime } from '../../utils/audioUtils';
 
 export function MiniPlayer() {
   const {
-    isPlaying, setIsPlaying, volume, setVolume, isMuted, toggleMute,
+    volume, setVolume, isMuted, toggleMute,
     currentTime, duration,
   } = usePlayerStore();
   const playerTrack = usePlayerStore((s) => s.currentTrack());
   const radioStation = useRadioStore((s) => s.currentStation);
-  const radioPlaying = useRadioStore((s) => s.isPlaying);
 
   const title = playerTrack?.title ?? radioStation?.name ?? 'Sin reproducir';
   const subtitle = playerTrack?.artist ?? radioStation?.country ?? '';
   const artwork = playerTrack?.coverUrl ?? radioStation?.favicon;
   const isRadio = !playerTrack && !!radioStation;
-  const active = isPlaying || radioPlaying;
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -90,29 +88,6 @@ export function MiniPlayer() {
           )}
         </div>
       </div>
-
-      {/* Main play button */}
-      <button
-        onClick={() => {
-          if (isRadio) {
-            // For radio, toggle radio playback
-            const { setIsPlaying: setRadioIsPlaying } = useRadioStore.getState();
-            setRadioIsPlaying(!radioPlaying);
-          } else {
-            // For local player, toggle local playback
-            setIsPlaying(!isPlaying);
-          }
-        }}
-        aria-label={active ? 'Pausar' : 'Reproducir'}
-        style={{
-          background: 'var(--accent-primary)', border: 'none', color: 'var(--bg-base)',
-          width: 36, height: 36, borderRadius: '50%',
-          cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
-        {active ? '⏸' : '▶'}
-      </button>
 
       {/* Right side controls - Volume only */}
       <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>

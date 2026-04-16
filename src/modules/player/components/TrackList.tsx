@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { usePlayerStore } from '../store/playerStore';
 import { formatTime } from '../../../shared/utils/audioUtils';
@@ -71,6 +71,25 @@ export function TrackList() {
     setCurrentIndex(index);
     setIsPlaying(true);
   };
+
+  // Auto-scroll to current track when it changes
+  useEffect(() => {
+    if (currentIndex >= 0 && parentRef.current) {
+      const container = parentRef.current;
+      const trackTop = currentIndex * ROW_HEIGHT;
+      const trackBottom = trackTop + ROW_HEIGHT;
+      const containerTop = container.scrollTop;
+      const containerBottom = containerTop + container.clientHeight;
+
+      // Scroll if track is not visible
+      if (trackTop < containerTop || trackBottom > containerBottom) {
+        container.scrollTo({
+          top: trackTop - container.clientHeight / 2 + ROW_HEIGHT / 2,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [currentIndex]);
 
   const virtualizer = useVirtualizer({
     count: queue.length,
