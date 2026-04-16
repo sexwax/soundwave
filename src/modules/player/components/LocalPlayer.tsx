@@ -3,18 +3,20 @@ import { usePlayerStore } from '../store/playerStore';
 import { useAudioEngine } from '../hooks/useAudioEngine';
 import { TrackList } from './TrackList';
 import { Equalizer } from './Equalizer';
+import { FileTree } from './FileTree';
 import { Button } from '../../../shared/components/ui/Button';
 import { Visualizer } from '../../../shared/components/audio/Visualizer';
 import { Slider } from '../../../shared/components/ui/Slider';
 import { useState } from 'react';
 import { formatTime } from '../../../shared/utils/formatters';
+import type { LocalTrack } from '../../favorites/db/favoritesDb';
 
 export function LocalPlayer() {
   const { openDirectory, openFiles, isIndexing } = useLocalFiles();
   const { seek } = useAudioEngine();
   const {
     queue, isShuffled, toggleShuffle, crossfadeDuration, setCrossfade,
-    isPlaying, setIsPlaying, nextTrack, prevTrack,
+    isPlaying, setIsPlaying, nextTrack, prevTrack, setCurrentIndex,
     currentTime, duration,
     volume, setVolume, isMuted, toggleMute,
     currentTrack
@@ -22,6 +24,14 @@ export function LocalPlayer() {
   const track = currentTrack();
   const [showEq, setShowEq] = useState(false);
   const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
+
+  const handleSelectTrack = (selectedTrack: LocalTrack) => {
+    const index = queue.findIndex(t => t.filePath === selectedTrack.filePath);
+    if (index >= 0) {
+      setCurrentIndex(index);
+      setIsPlaying(true);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
@@ -231,6 +241,11 @@ export function LocalPlayer() {
         </div>
       )}
 
+      {/* File Tree - Shows folder structure when tracks are loaded */}
+      {queue.length > 0 && (
+        <FileTree tracks={queue} onSelectTrack={handleSelectTrack} />
+      )}
+
       {/* Visualizer */}
       <div className="visualizer-container" style={{ background: 'var(--bg-elevated)', borderRadius: 12, overflow: 'hidden', padding: 4 }}>
         <Visualizer width={800} height={120} mode={visMode} />
@@ -248,15 +263,8 @@ export function LocalPlayer() {
         style={{ maxWidth: 280 }}
       />
 
-      {/* Info bar */}
-      {queue.length > 0 && (
-        <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-          {queue.length} pistas en cola
-        </div>
-      )}
-
-      {/* Track list */}
-      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      {/* Track list with header */}
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         {queue.length === 0 ? (
           <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -271,7 +279,28 @@ export function LocalPlayer() {
             </p>
           </div>
         ) : (
-          <TrackList />
+          <>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '8px 0',
+              borderBottom: '1px solid var(--border-color)',
+              marginBottom: 8,
+            }}>
+              <span style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 13,
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+              }}>
+                🎼 Lista de reproducción ({queue.length} pistas)
+              </span>
+            </div>
+            <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+              <TrackList />
+            </div>
+          </>
         )}
       </div>
     </div>
