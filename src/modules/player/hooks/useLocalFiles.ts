@@ -75,45 +75,19 @@ export function useLocalFiles() {
   const openDirectory = useCallback(async () => {
     setIsIndexing(true);
     try {
-      let files: File[] = [];
-
-      if ('showDirectoryPicker' in window) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const dirHandle = await (window as any).showDirectoryPicker();
-          files = await readFilesFromHandle(dirHandle);
-        } catch (err) {
-          // User cancelled or permission denied
-          console.warn('Directory picker failed:', err);
-          setIsIndexing(false);
-          return;
-        }
-      } else {
-        // Fallback: use file input with webkitdirectory attribute
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.multiple = true;
-        // @ts-ignore - webkitdirectory is non-standard but widely supported
-        input.webkitDirectory = true;
-        input.accept = AUDIO_EXTENSIONS.join(',');
-
-        try {
-          const result = await new Promise<File[]>((resolve) => {
-            input.onchange = () => {
-              resolve(Array.from(input.files ?? []));
-            };
-            input.oncancel = () => resolve([]);
-            input.click();
-          });
-          files = result.filter(f => isAudioFile(f.name));
-        } catch (err) {
-          console.warn('File picker failed:', err);
-          setIsIndexing(false);
-          return;
-        }
+      // Usar SOLO el explorador de carpetas nativo del navegador
+      if (!('showDirectoryPicker' in window)) {
+        alert('Tu navegador no soporta la selección de carpetas. Usa Chrome, Edge o Firefox.');
+        setIsIndexing(false);
+        return;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const dirHandle = await (window as any).showDirectoryPicker();
+      const files = await readFilesFromHandle(dirHandle);
+
       if (files.length === 0) {
+        alert('No se encontraron archivos de audio en esta carpeta.');
         setIsIndexing(false);
         return;
       }
@@ -128,9 +102,12 @@ export function useLocalFiles() {
       setQueue(tracks, 0);
       // Auto-play first track after loading
       setTimeout(() => setIsPlaying(true), 100);
-    } catch (e) {
-      if ((e as Error).name !== 'AbortError') {
-        console.error(e);
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') {
+        // Usuario canceló - no hacer nada
+      } else {
+        console.error('Error al abrir carpeta:', err);
+        alert('Error al leer la carpeta: ' + (err as Error).message);
       }
     } finally {
       setIsIndexing(false);
