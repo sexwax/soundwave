@@ -25,33 +25,47 @@ export function LocalPlayer() {
   const [showEq, setShowEq] = useState(false);
   const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
   const [isSeeking, setIsSeeking] = useState(false);
-  const [tempTime, setTempTime] = useState<number | null>(null);
+  const [sliderValue, setSliderValue] = useState(0);
   const prevTrackRef = useRef<string | null>(null);
+  const prevDurationRef = useRef<number>(0);
 
-  // Reset seeking state when track changes
+  // Sync slider value with currentTime only when not seeking
+  useEffect(() => {
+    if (!isSeeking) {
+      setSliderValue(currentTime);
+    }
+  }, [currentTime, isSeeking]);
+
+  // Reset state when track changes
   useEffect(() => {
     const trackId = track?.filePath || null;
     if (trackId !== prevTrackRef.current) {
       prevTrackRef.current = trackId;
       setIsSeeking(false);
-      setTempTime(null);
+      setSliderValue(0);
     }
   }, [track?.filePath]);
 
+  // Reset when duration changes significantly (new track loaded)
+  useEffect(() => {
+    if (duration > 0 && Math.abs(duration - prevDurationRef.current) > 5) {
+      prevDurationRef.current = duration;
+      setSliderValue(0);
+    }
+  }, [duration]);
+
   const handleSeekStart = () => {
     setIsSeeking(true);
-    setTempTime(currentTime);
   };
 
   const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTempTime(Number(e.target.value));
+    setSliderValue(Number(e.target.value));
   };
 
   const handleSeekEnd = (e: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => {
     const value = (e.target as HTMLInputElement).value;
     setIsSeeking(false);
     seek(Number(value));
-    setTempTime(null);
   };
 
   const handleSelectTrack = (selectedTrack: LocalTrack) => {
@@ -157,13 +171,13 @@ export function LocalPlayer() {
             {/* Progress Bar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 40, textAlign: 'right' }}>
-                {formatTime(isSeeking && tempTime !== null ? tempTime : currentTime)}
+                {formatTime(sliderValue)}
               </span>
               <input
                 type="range"
                 min={0}
                 max={duration || 100}
-                value={isSeeking && tempTime !== null ? tempTime : currentTime}
+                value={Math.min(sliderValue, duration || 100)}
                 onMouseDown={handleSeekStart}
                 onTouchStart={handleSeekStart}
                 onChange={handleSeekChange}
