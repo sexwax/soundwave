@@ -1,13 +1,11 @@
-import { useState } from 'react';
 import { usePlayerStore } from '../../../modules/player/store/playerStore';
 import { useRadioStore } from '../../../modules/radio/store/radioStore';
-import { Visualizer } from '../audio/Visualizer';
 import { formatTime } from '../../utils/audioUtils';
 
 export function MiniPlayer() {
   const {
     isPlaying, setIsPlaying, volume, setVolume, isMuted, toggleMute,
-    currentTime, duration, nextTrack, prevTrack, repeatMode, setRepeatMode,
+    currentTime, duration,
   } = usePlayerStore();
   const playerTrack = usePlayerStore((s) => s.currentTrack());
   const radioStation = useRadioStore((s) => s.currentStation);
@@ -19,15 +17,7 @@ export function MiniPlayer() {
   const isRadio = !playerTrack && !!radioStation;
   const active = isPlaying || radioPlaying;
 
-  const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
-
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-
-  const cycleRepeat = () => {
-    const modes = ['none', 'queue', 'track'] as const;
-    const cur = modes.indexOf(repeatMode);
-    setRepeatMode(modes[(cur + 1) % modes.length]);
-  };
 
   return (
     <footer
@@ -124,51 +114,8 @@ export function MiniPlayer() {
         {active ? '⏸' : '▶'}
       </button>
 
-      {/* Desktop-only extra controls */}
+      {/* Right side controls - Volume only */}
       <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
-        {/* Prev/Next */}
-        <button
-          onClick={prevTrack}
-          disabled={isRadio}
-          aria-label="Anterior"
-          style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 14, padding: 4, opacity: isRadio ? 0.3 : 1 }}
-        >⏮</button>
-
-        <button
-          onClick={nextTrack}
-          disabled={isRadio}
-          aria-label="Siguiente"
-          style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 14, padding: 4, opacity: isRadio ? 0.3 : 1 }}
-        >⏭</button>
-
-        {/* Visualizer */}
-        <div style={{ width: 120 }}>
-          <Visualizer width={120} height={32} mode={visMode} compact />
-        </div>
-
-        {/* Vis mode */}
-        <button
-          onClick={() => setVisMode(v => v === 'bars' ? 'wave' : v === 'wave' ? 'circular' : 'bars')}
-          aria-label="Cambiar visualizador"
-          style={{ background: 'none', border: 'none', color: 'var(--text-disabled)', cursor: 'pointer', fontSize: 11 }}
-        >
-          {visMode === 'bars' ? '▌▌▌' : visMode === 'wave' ? '〜〜' : '◎'}
-        </button>
-
-        {/* Repeat */}
-        {!isRadio && (
-          <button
-            onClick={cycleRepeat}
-            aria-label="Modo repetición"
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer', fontSize: 12,
-              color: repeatMode !== 'none' ? 'var(--accent-primary)' : 'var(--text-disabled)',
-            }}
-          >
-            {repeatMode === 'track' ? '🔂' : '🔁'}
-          </button>
-        )}
-
         {/* Mute */}
         <button
           onClick={toggleMute}
