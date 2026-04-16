@@ -70,7 +70,7 @@ async function parseTrack(file: File): Promise<LocalTrack> {
 
 export function useLocalFiles() {
   const [isIndexing, setIsIndexing] = useState(false);
-  const { setQueue } = usePlayerStore();
+  const { setQueue, setIsPlaying } = usePlayerStore();
 
   const openDirectory = useCallback(async () => {
     setIsIndexing(true);
@@ -125,7 +125,9 @@ export function useLocalFiles() {
         if (!existing) await db.tracks.add(track);
       }
 
-      setQueue(tracks);
+      setQueue(tracks, 0);
+      // Auto-play first track after loading
+      setTimeout(() => setIsPlaying(true), 100);
     } catch (e) {
       if ((e as Error).name !== 'AbortError') {
         console.error(e);
@@ -133,7 +135,7 @@ export function useLocalFiles() {
     } finally {
       setIsIndexing(false);
     }
-  }, [setQueue]);
+  }, [setQueue, setIsPlaying]);
 
   const openFiles = useCallback(async () => {
     const input = document.createElement('input');

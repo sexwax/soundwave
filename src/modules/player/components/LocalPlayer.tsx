@@ -1,15 +1,25 @@
 import { useLocalFiles } from '../hooks/useLocalFiles';
 import { usePlayerStore } from '../store/playerStore';
+import { useAudioEngine } from '../hooks/useAudioEngine';
 import { TrackList } from './TrackList';
 import { Equalizer } from './Equalizer';
 import { Button } from '../../../shared/components/ui/Button';
 import { Visualizer } from '../../../shared/components/audio/Visualizer';
 import { Slider } from '../../../shared/components/ui/Slider';
 import { useState } from 'react';
+import { formatTime } from '../../../shared/utils/formatters';
 
 export function LocalPlayer() {
   const { openDirectory, openFiles, isIndexing } = useLocalFiles();
-  const { queue, isShuffled, toggleShuffle, crossfadeDuration, setCrossfade } = usePlayerStore();
+  const { seek } = useAudioEngine();
+  const {
+    queue, isShuffled, toggleShuffle, crossfadeDuration, setCrossfade,
+    isPlaying, setIsPlaying, nextTrack, prevTrack,
+    currentTime, duration,
+    volume, setVolume, isMuted, toggleMute,
+    currentTrack
+  } = usePlayerStore();
+  const track = currentTrack();
   const [showEq, setShowEq] = useState(false);
   const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
 
@@ -54,6 +64,172 @@ export function LocalPlayer() {
           ))}
         </div>
       </div>
+
+      {/* Playback Controls Panel */}
+      {queue.length > 0 && (
+        <div className="playback-controls-panel" style={{
+          background: 'var(--bg-elevated)',
+          borderRadius: 12,
+          padding: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+        }}>
+          {/* Now Playing Info */}
+          {track && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '8px 12px',
+              background: 'var(--bg-surface)',
+              borderRadius: 8,
+            }}>
+              {track.coverUrl ? (
+                <img
+                  src={track.coverUrl}
+                  alt={track.album}
+                  style={{ width: 48, height: 48, borderRadius: 4, objectFit: 'cover' }}
+                />
+              ) : (
+                <div style={{
+                  width: 48, height: 48,
+                  background: 'var(--accent-primary)',
+                  borderRadius: 4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 24,
+                }}>
+                  🎵
+                </div>
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: 'var(--text-primary)',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  {track.title}
+                </div>
+                <div style={{
+                  fontSize: 12,
+                  color: 'var(--text-secondary)',
+                }}>
+                  {track.artist}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Progress Bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 40, textAlign: 'right' }}>
+              {formatTime(currentTime)}
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={duration || 100}
+              value={currentTime}
+              onChange={(e) => seek(Number(e.target.value))}
+              style={{
+                flex: 1,
+                height: 4,
+                background: 'var(--bg-surface)',
+                borderRadius: 2,
+                appearance: 'none',
+                cursor: 'pointer',
+              }}
+              className="progress-slider"
+            />
+            <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 40 }}>
+              {formatTime(duration)}
+            </span>
+          </div>
+
+          {/* Main Controls */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 16,
+          }}>
+            {/* Previous */}
+            <Button
+              onClick={prevTrack}
+              variant="ghost"
+              size="sm"
+              aria-label="Anterior"
+              style={{ width: 40, height: 40, borderRadius: '50%' }}
+            >
+              ⏮
+            </Button>
+
+            {/* Play/Pause */}
+            <Button
+              onClick={() => setIsPlaying(!isPlaying)}
+              variant="primary"
+              size="sm"
+              aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
+              style={{ width: 56, height: 56, borderRadius: '50%', fontSize: 24 }}
+            >
+              {isPlaying ? '⏸' : '▶'}
+            </Button>
+
+            {/* Next */}
+            <Button
+              onClick={nextTrack}
+              variant="ghost"
+              size="sm"
+              aria-label="Siguiente"
+              style={{ width: 40, height: 40, borderRadius: '50%' }}
+            >
+              ⏭
+            </Button>
+          </div>
+
+          {/* Volume Control */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            maxWidth: 200,
+            margin: '0 auto',
+          }}>
+            <Button
+              onClick={toggleMute}
+              variant="ghost"
+              size="sm"
+              aria-label={isMuted ? 'Activar sonido' : 'Silenciar'}
+              style={{ minWidth: 32 }}
+            >
+              {isMuted || volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
+            </Button>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={isMuted ? 0 : volume}
+              onChange={(e) => setVolume(Number(e.target.value))}
+              style={{
+                flex: 1,
+                height: 4,
+                background: 'var(--bg-surface)',
+                borderRadius: 2,
+                appearance: 'none',
+                cursor: 'pointer',
+              }}
+              className="volume-slider"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Visualizer */}
       <div className="visualizer-container" style={{ background: 'var(--bg-elevated)', borderRadius: 12, overflow: 'hidden', padding: 4 }}>
