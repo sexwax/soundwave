@@ -6,6 +6,7 @@ import { stopRadio } from '../../radio/services/radioPlayer';
 
 // Module-scope file registry: filePath → object URL
 const fileMap = new Map<string, string>();
+let howlRefGlobal: React.RefObject<Howl | null> | null = null;
 
 export function registerFile(filePath: string, file: File) {
   if (!fileMap.has(filePath)) {
@@ -17,8 +18,22 @@ export function getFileUrl(filePath: string): string | undefined {
   return fileMap.get(filePath);
 }
 
+// Stop local player - called from radio to stop local playback
+export function stopLocalPlayer() {
+  if (howlRefGlobal?.current) {
+    howlRefGlobal.current.unload();
+    howlRefGlobal.current = null;
+  }
+}
+
 export function useAudioEngine() {
   const howlRef = useRef<Howl | null>(null);
+
+  // Store ref globally for radio to stop local playback
+  useEffect(() => {
+    howlRefGlobal = howlRef;
+    return () => { howlRefGlobal = null; };
+  }, []);
   const { isPlaying, volume, isMuted, crossfadeDuration, playTrigger,
     setIsPlaying, setCurrentTime, setDuration, nextTrack,
   } = usePlayerStore();

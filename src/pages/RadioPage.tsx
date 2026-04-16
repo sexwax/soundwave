@@ -16,6 +16,7 @@ import { proxify, proxyHttp } from '../shared/utils/corsProxy';
 import { Howl } from 'howler';
 import { getRadioHowl, setRadioHowl, stopRadio } from '../modules/radio/services/radioPlayer';
 import { usePlayerStore } from '../modules/player/store/playerStore';
+import { stopLocalPlayer as stopLocalAudioEngine } from '../modules/player/hooks/useAudioEngine';
 
 export default function RadioPage() {
   const { uuid } = useParams();
@@ -41,7 +42,7 @@ export default function RadioPage() {
     setIsPlaying(true);
 
     // Stop local player if it's running
-    stopLocalPlayer(false);
+    stopLocalAudioEngine();
 
     const url = station.url_resolved || station.url;
 
