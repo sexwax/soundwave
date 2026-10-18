@@ -1,65 +1,74 @@
-import { useEffect } from 'react';
-import { useShallow } from 'zustand/react/shallow';
+import { useEffect, useState } from 'react';
 import { usePlayerStore } from '../../modules/player/store/playerStore';
-import { useRadioStore } from '../../modules/radio/store/radioStore';
-import * as localEngine from '../../modules/player/services/localEngine';
+import { getActiveSource } from '../../shared/audio/playbackCoordinator';
 import { toggleRadio } from '../../modules/radio/services/radioPlayer';
+import * as localEngine from '../../modules/player/services/localEngine';
 
 const SEEK_STEP_SECONDS = 10;
+const VOLUME_STEP = 0.05;
 
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return true;
+  return target.isContentEditable;
+}
+
+/**
+ * Global shortcuts. Registers a single listener once (no reactive selectors —
+ * everything is read fresh from getState()/getActiveSource() on each keydown)
+ * so it never re-renders the app, unlike the old per-store-field subscriptions.
+ */
 export function useKeyboardShortcuts() {
-  const { isPlaying, setIsPlaying, toggleMute, nextTrack, prevTrack } = usePlayerStore(
-    useShallow((s) => ({
-      isPlaying: s.isPlaying, setIsPlaying: s.setIsPlaying, toggleMute: s.toggleMute,
-      nextTrack: s.nextTrack, prevTrack: s.prevTrack,
-    })),
-  );
-  const playerTrack = usePlayerStore((s) => s.currentTrack());
-  const radioStation = useRadioStore((s) => s.currentStation);
-
-  // Determine which player is active
-  const isRadioActive = !!radioStation;
-  const isLocalActive = !!playerTrack && !isRadioActive;
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (isTypingTarget(e.target)) return;
+
+      if (e.key === '?') {
+        e.preventDefault();
+        setShowHelp((v) => !v);
+        return;
+      }
+
+      const player = usePlayerStore.getState();
+      const activeSource = getActiveSource();
 
       switch (e.code) {
-        case 'Space':
+        case 'Space': {
+          if (e.target instanceof HTMLElement && e.target.tagName === 'BUTTON') return;
           e.preventDefault();
-          if (isRadioActive) {
-            toggleRadio();
-          } else {
-            setIsPlaying(!isPlaying);
-          }
+          if (activeSource === 'radio') toggleRadio();
+          else if (activeSource === 'local') player.setIsPlaying(!player.isPlaying);
           break;
+        }
         case 'ArrowLeft':
-          if (e.shiftKey) {
-            // Seek backward only for local player
-            if (isLocalActive) localEngine.seekBy(-SEEK_STEP_SECONDS);
-          } else {
-            // Previous track only for local player
-            if (isLocalActive) prevTrack();
-          }
+          if (activeSource !== 'local') break;
+          if (e.shiftKey) localEngine.seekBy(-SEEK_STEP_SECONDS);
+          else player.prevTrack();
           break;
         case 'ArrowRight':
-          if (e.shiftKey) {
-            // Seek forward only for local player
-            if (isLocalActive) localEngine.seekBy(SEEK_STEP_SECONDS);
-          } else {
-            // Next track only for local player
-            if (isLocalActive) nextTrack();
-          }
+          if (activeSource !== 'local') break;
+          if (e.shiftKey) localEngine.seekBy(SEEK_STEP_SECONDS);
+          else player.nextTrack();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          player.setVolume(Math.min(1, player.volume + VOLUME_STEP));
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          player.setVolume(Math.max(0, player.volume - VOLUME_STEP));
           break;
         case 'KeyM':
-          toggleMute();
+          player.toggleMute();
           break;
       }
     };
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isPlaying, isRadioActive, isLocalActive, setIsPlaying, toggleMute, nextTrack, prevTrack]);
+  }, []);
+
+  return { showHelp, closeHelp: () => setShowHelp(false) };
 }

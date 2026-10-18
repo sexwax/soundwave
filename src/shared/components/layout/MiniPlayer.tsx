@@ -1,15 +1,9 @@
-import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePlayerStore } from '../../../modules/player/store/playerStore';
 import { useRadioStore } from '../../../modules/radio/store/radioStore';
+import { usePlaybackStore } from '../../audio/playbackCoordinator';
 import { useShallow } from 'zustand/react/shallow';
 import { formatTime } from '../../utils/audioUtils';
-
-function formatTimeStable(seconds: number): string {
-  if (!seconds || !isFinite(seconds)) return '0:00';
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
 
 export function MiniPlayer() {
   const {
@@ -23,17 +17,17 @@ export function MiniPlayer() {
   );
   const playerTrack = usePlayerStore((s) => s.currentTrack());
   const radioStation = useRadioStore((s) => s.currentStation);
+  const activeSource = usePlaybackStore((s) => s.active);
+  const navigate = useNavigate();
 
-  const title = playerTrack?.title ?? radioStation?.name ?? 'Sin reproducir';
-  const subtitle = playerTrack?.artist ?? radioStation?.country ?? '';
-  const artwork = playerTrack?.coverUrl ?? radioStation?.favicon;
-  const isRadio = !playerTrack && !!radioStation;
+  // Trust the coordinator's active source; fall back to "radio if a station is
+  // loaded and no local track is" only before anything has ever been claimed.
+  const isRadio = activeSource ? activeSource === 'radio' : !!radioStation && !playerTrack;
 
-  const progress = useMemo(() => (duration > 0 ? (currentTime / duration) * 100 : 0), [currentTime, duration]);
-  const timeDisplay = useMemo(
-    () => ({ current: formatTimeStable(currentTime), total: formatTimeStable(duration) }),
-    [currentTime, duration]
-  );
+  const title = isRadio ? (radioStation?.name ?? 'Sin reproducir') : (playerTrack?.title ?? 'Sin reproducir');
+  const subtitle = isRadio ? (radioStation?.country ?? '') : (playerTrack?.artist ?? '');
+  const artwork = isRadio ? radioStation?.favicon : playerTrack?.coverUrl;
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
     <footer
@@ -70,40 +64,47 @@ export function MiniPlayer() {
         </div>
       )}
 
-      {/* Artwork */}
+      {/* Artwork + track info — clicking navigates to the active source's page */}
       <div
-        style={{
-          width: 40, height: 40, borderRadius: 6, flexShrink: 0,
-          background: 'var(--bg-elevated)',
-          overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          border: '1px solid var(--border-subtle)',
-        }}
+        onClick={() => navigate(isRadio ? '/radio' : '/')}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && navigate(isRadio ? '/radio' : '/')}
+        style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, cursor: 'pointer' }}
       >
-        {artwork ? (
-          <img src={artwork} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        ) : (
-          <span style={{ fontSize: 18 }}>{isRadio ? '📻' : '🎵'}</span>
-        )}
-      </div>
-
-      {/* Track info */}
-      <div style={{ minWidth: 0, flex: 1 }}>
         <div
           style={{
-            fontSize: 12, fontWeight: 600, color: 'var(--text-primary)',
-            overflow: 'hidden', whiteSpace: 'nowrap',
-            fontFamily: 'var(--font-mono)',
+            width: 40, height: 40, borderRadius: 6, flexShrink: 0,
+            background: 'var(--bg-elevated)',
+            overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '1px solid var(--border-subtle)',
           }}
         >
-          <span className={title.length > 20 ? 'marquee-text' : ''}>{title}</span>
-        </div>
-        <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>
-          {subtitle}
-          {!isRadio && duration > 0 && (
-            <span style={{ marginLeft: 8, color: 'var(--text-disabled)' }}>
-              {formatTime(currentTime)} / {formatTime(duration)}
-            </span>
+          {artwork ? (
+            <img src={artwork} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <span style={{ fontSize: 18 }}>{isRadio ? '📻' : '🎵'}</span>
           )}
+        </div>
+
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div
+            style={{
+              fontSize: 12, fontWeight: 600, color: 'var(--text-primary)',
+              overflow: 'hidden', whiteSpace: 'nowrap',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            <span className={title.length > 20 ? 'marquee-text' : ''}>{title}</span>
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 2 }}>
+            {subtitle}
+            {!isRadio && duration > 0 && (
+              <span style={{ marginLeft: 8, color: 'var(--text-disabled)' }}>
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -121,7 +122,7 @@ export function MiniPlayer() {
         {/* Volume */}
         <input
           type="range" min={0} max={1} step={0.01}
-          value={volume}
+          value={isMuted ? 0 : volume}
           onChange={(e) => {
             const newVolume = Number(e.target.value);
             setVolume(newVolume);
