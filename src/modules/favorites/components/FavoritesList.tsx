@@ -1,18 +1,23 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { flagEmoji } from '../../../shared/utils/formatters';
 import { Badge } from '../../../shared/components/ui/Badge';
 import { Button } from '../../../shared/components/ui/Button';
+import { notify } from '../../../shared/utils/notify';
+
+const CLEAR_HISTORY_CONFIRM_TIMEOUT_MS = 4000;
 
 export function FavoritesList() {
-  const { favorites, history, load, removeFavorite } = useFavoritesStore();
+  const { favorites, history, load, removeFavorite, importFavorites, clearHistory } = useFavoritesStore();
   const navigate = useNavigate();
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [confirmingClear, setConfirmingClear] = useState(false);
 
   useEffect(() => { load(); }, [load]);
 
-  const playStation = (fav: typeof favorites[0]) => {
-    navigate('/station/' + fav.stationuuid);
+  const playStation = (uuid: string) => {
+    navigate('/station/' + uuid);
   };
 
   const exportJson = () => {
@@ -35,12 +40,48 @@ export function FavoritesList() {
     URL.revokeObjectURL(url);
   };
 
+  const importJson = () => importInputRef.current?.click();
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      const imported = importFavorites(data);
+      notify(
+        imported > 0 ? `${imported} favoritos importados` : 'No había favoritos nuevos para importar',
+        imported > 0 ? 'success' : 'info',
+      );
+    } catch {
+      notify('El archivo no es un JSON de favoritos válido', 'error');
+    }
+  };
+
+  const handleClearHistory = () => {
+    if (!confirmingClear) {
+      setConfirmingClear(true);
+      setTimeout(() => setConfirmingClear(false), CLEAR_HISTORY_CONFIRM_TIMEOUT_MS);
+      return;
+    }
+    setConfirmingClear(false);
+    void clearHistory();
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Actions */}
       <div className="favorites-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <Button variant="outline" size="sm" onClick={exportJson}>📥 Exportar JSON</Button>
         <Button variant="outline" size="sm" onClick={exportM3U}>📥 Exportar M3U</Button>
+        <Button variant="outline" size="sm" onClick={importJson}>📤 Importar JSON</Button>
+        <input
+          ref={importInputRef}
+          type="file"
+          accept="application/json"
+          onChange={handleImportFile}
+          style={{ display: 'none' }}
+        />
       </div>
 
       {/* Favorites */}
@@ -56,7 +97,7 @@ export function FavoritesList() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {favorites.map((fav) => (
               <div
-                key={fav.id}
+                key={fav.stationuuid}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   background: 'var(--bg-elevated)', borderRadius: 8, padding: '10px 12px',
@@ -69,10 +110,10 @@ export function FavoritesList() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'var(--font-mono)' }}>{fav.name}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                    {flagEmoji('')} {fav.country} <Badge>{fav.bitrate}kbps</Badge>
+                    {flagEmoji(fav.countrycode ?? '')} {fav.country} <Badge>{fav.bitrate}kbps</Badge>
                   </div>
                 </div>
-                <Button size="sm" onClick={() => playStation(fav)}>▶ Escuchar</Button>
+                <Button size="sm" onClick={() => playStation(fav.stationuuid)}>▶ Escuchar</Button>
                 <Button size="sm" variant="ghost" onClick={() => removeFavorite(fav.stationuuid)}>✕</Button>
               </div>
             ))}
@@ -82,15 +123,31 @@ export function FavoritesList() {
 
       {/* History */}
       <div>
-        <h3 style={{ fontFamily: 'var(--font-display)', marginBottom: 12 }}>
-          🕐 Historial reciente
-        </h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', margin: 0 }}>
+            🕐 Historial reciente
+          </h3>
+          {history.length > 0 && (
+            <Button size="sm" variant={confirmingClear ? 'danger' : 'ghost'} onClick={handleClearHistory}>
+              {confirmingClear ? '¿Seguro? Confirmar' : '🗑️ Borrar historial'}
+            </Button>
+          )}
+        </div>
         {history.length === 0 ? (
           <p style={{ color: 'var(--text-disabled)', fontSize: 14 }}>Sin historial todavía.</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {history.slice(0, 30).map((h) => (
-              <div key={h.id} style={{ display: 'flex', gap: 12, padding: '6px 0', borderBottom: '1px solid var(--border-subtle)', alignItems: 'center' }}>
+              <div
+                key={h.id}
+                onClick={h.type === 'radio' && h.stationuuid ? () => playStation(h.stationuuid!) : undefined}
+                role={h.type === 'radio' ? 'button' : undefined}
+                tabIndex={h.type === 'radio' ? 0 : undefined}
+                style={{
+                  display: 'flex', gap: 12, padding: '6px 0', borderBottom: '1px solid var(--border-subtle)', alignItems: 'center',
+                  cursor: h.type === 'radio' ? 'pointer' : 'default',
+                }}
+              >
                 <span style={{ fontSize: 16 }}>{h.type === 'radio' ? '📻' : '🎵'}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.title}</div>

@@ -1,8 +1,9 @@
-import { usePlayerStore } from '../store/playerStore';
+import { usePlayerStore, selectCurrentTrack } from '../store/playerStore';
 import type { LocalTrack } from '../../favorites/db/favoritesDb';
 import { resumeAudio, routeThroughGraph } from '../../../shared/audio/audioGraph';
 import { claimPlayback, registerPlaybackSource } from '../../../shared/audio/playbackCoordinator';
 import { notify } from '../../../shared/utils/notify';
+import { useFavoritesStore } from '../../favorites/store/favoritesStore';
 
 const CROSSFADE_TICK_MS = 100;
 const RESTART_THRESHOLD_SECONDS = 3;
@@ -49,6 +50,8 @@ export function releaseFiles(keep: Set<string>): void {
 let el: HTMLAudioElement | null = null;
 let crossfadeInterval: ReturnType<typeof setInterval> | null = null;
 let baseVolume = 0.8;
+/** filePath of the track whose first `playing` already logged a history entry. */
+let loggedFilePath: string | null = null;
 
 function getElement(): HTMLAudioElement {
   if (!el) {
@@ -100,6 +103,17 @@ function attachListeners(node: HTMLAudioElement): void {
   });
   node.addEventListener('play', () => {
     usePlayerStore.getState().setIsPlaying(true);
+
+    const track = selectCurrentTrack(usePlayerStore.getState());
+    if (track && track.filePath !== loggedFilePath) {
+      loggedFilePath = track.filePath;
+      void useFavoritesStore.getState().addHistory({
+        type: 'local',
+        title: track.title,
+        artist: track.artist,
+        filePath: track.filePath,
+      });
+    }
   });
   node.addEventListener('error', () => {
     notify('No se pudo reproducir la pista.', 'error');

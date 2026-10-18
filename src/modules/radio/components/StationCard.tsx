@@ -31,6 +31,7 @@ export function StationCard({ station, onClick, onShowDetail, index = 0 }: Props
       url: station.url_resolved || station.url,
       favicon: station.favicon,
       country: station.country,
+      countrycode: station.countrycode,
       language: station.language,
       tags: station.tags,
       bitrate: station.bitrate,

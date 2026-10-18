@@ -7,6 +7,8 @@ export interface FavoriteStation {
   url: string;
   favicon: string;
   country: string;
+  /** Optional: favorites saved before this field existed show 🌐 instead of a flag. */
+  countrycode?: string;
   language: string;
   tags: string;
   bitrate: number;

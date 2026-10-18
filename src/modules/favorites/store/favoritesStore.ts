@@ -14,8 +14,18 @@ interface FavoritesState {
   addCollection: (name: string, color: string) => Promise<void>;
   removeCollection: (id: number) => Promise<void>;
   addHistory: (entry: Omit<PlayHistory, 'id' | 'playedAt'>) => Promise<void>;
+  clearHistory: () => Promise<void>;
+  importFavorites: (data: unknown) => number;
   saveDirHandle: (key: string, handle: FileSystemDirectoryHandle) => Promise<void>;
   getDirHandle: (key: string) => Promise<FileSystemDirectoryHandle | undefined>;
+}
+
+function isImportableFavorite(value: unknown): value is Omit<FavoriteStation, 'id' | 'addedAt'> {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return typeof v.stationuuid === 'string' && v.stationuuid.length > 0
+    && typeof v.name === 'string' && v.name.length > 0
+    && typeof v.url === 'string' && v.url.length > 0;
 }
 
 export const useFavoritesStore = create<FavoritesState>()(
@@ -68,6 +78,12 @@ export const useFavoritesStore = create<FavoritesState>()(
       },
 
       addHistory: async (entry) => {
+        const last = get().history[0];
+        const isDuplicate = !!last && last.type === entry.type && (
+          entry.type === 'local' ? last.filePath === entry.filePath : last.stationuuid === entry.stationuuid
+        );
+        if (isDuplicate) return;
+
         try {
           await db.history.add({ ...entry, playedAt: new Date() });
           const history = await db.history.orderBy('playedAt').reverse().limit(500).toArray();
@@ -75,6 +91,27 @@ export const useFavoritesStore = create<FavoritesState>()(
         } catch {
           // Ignorar errores de historial
         }
+      },
+
+      clearHistory: async () => {
+        try {
+          await db.history.clear();
+          set({ history: [] });
+        } catch {
+          // Ignorar errores de historial
+        }
+      },
+
+      importFavorites: (data) => {
+        const list = Array.isArray(data) ? data : [data];
+        const valid = list.filter(isImportableFavorite);
+        const known = new Set(get().favorites.map((f) => f.stationuuid));
+        const fresh = valid.filter((f) => !known.has(f.stationuuid));
+        if (fresh.length === 0) return 0;
+        set((s) => ({
+          favorites: [...fresh.map((f) => ({ ...f, addedAt: new Date() })), ...s.favorites],
+        }));
+        return fresh.length;
       },
 
       saveDirHandle: async (key, handle) => {

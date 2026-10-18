@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useRadioStore, type RadioStation } from '../store/radioStore';
 import { useFavoritesStore } from '../../favorites/store/favoritesStore';
@@ -5,6 +6,7 @@ import { flagEmoji } from '../../../shared/utils/formatters';
 import { Badge } from '../../../shared/components/ui/Badge';
 import { Button } from '../../../shared/components/ui/Button';
 import { radioBrowserApi } from '../services/radioBrowserApi';
+import { notify } from '../../../shared/utils/notify';
 
 interface Props {
   station: RadioStation;
@@ -20,9 +22,12 @@ export function StationDetail({ station, onClose }: Props) {
   const removeFavorite = useFavoritesStore((s) => s.removeFavorite);
   const isActive = currentStation?.stationuuid === station.stationuuid;
   const fav = favorites.some((f) => f.stationuuid === station.stationuuid);
+  const [voted, setVoted] = useState(false);
 
   const vote = async () => {
-    await radioBrowserApi.vote(station.stationuuid);
+    const result = await radioBrowserApi.vote(station.stationuuid);
+    notify(result.message, result.ok ? 'success' : 'error');
+    if (result.ok) setVoted(true);
   };
 
   const tags = station.tags.split(',').filter(Boolean).slice(0, 5);
@@ -81,6 +86,7 @@ export function StationDetail({ station, onClose }: Props) {
             url: station.url_resolved || station.url,
             favicon: station.favicon,
             country: station.country,
+            countrycode: station.countrycode,
             language: station.language,
             tags: station.tags,
             bitrate: station.bitrate,
@@ -91,8 +97,8 @@ export function StationDetail({ station, onClose }: Props) {
         >
           {fav ? '💔 Quitar' : '❤️ Favorito'}
         </Button>
-        <Button onClick={vote} variant="ghost" size="sm">
-          👍 Votar ({station.votes})
+        <Button onClick={vote} variant="ghost" size="sm" disabled={voted}>
+          {voted ? '✓ Votado' : `👍 Votar (${station.votes})`}
         </Button>
         <Button onClick={onClose} variant="ghost" size="sm">
           Cerrar
