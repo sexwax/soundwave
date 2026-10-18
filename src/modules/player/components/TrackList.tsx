@@ -116,6 +116,12 @@ export function TrackList({ filter = '' }: TrackListProps) {
     }
   }, [currentIndex]);
 
+  // TanStack Virtual returns getScrollElement/estimateSize closures that the
+  // React Compiler can't prove are stable, so it skips memoizing this
+  // component. Harmless here: nothing downstream depends on this component's
+  // own memoization, and the virtualizer re-creating its closures every
+  // render is how the library is meant to be used.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
