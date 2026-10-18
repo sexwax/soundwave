@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePlayerStore } from '../../../modules/player/store/playerStore';
 import { useRadioStore } from '../../../modules/radio/store/radioStore';
 import { usePlaybackStore } from '../../audio/playbackCoordinator';
+import { useEqStore } from '../../audio/eqStore';
 import { useShallow } from 'zustand/react/shallow';
 import { formatTime } from '../../utils/formatters';
 
@@ -18,6 +19,8 @@ export function MiniPlayer() {
   const playerTrack = usePlayerStore((s) => s.currentTrack());
   const radioStation = useRadioStore((s) => s.currentStation);
   const activeSource = usePlaybackStore((s) => s.active);
+  const eqPanelOpen = useEqStore((s) => s.panelOpen);
+  const toggleEqPanel = useEqStore((s) => s.togglePanel);
   const navigate = useNavigate();
 
   // Trust the coordinator's active source; fall back to "radio if a station is
@@ -135,6 +138,21 @@ export function MiniPlayer() {
           aria-label="Volumen"
         />
       </div>
+
+      {/* EQ toggle — intentionally outside .desktop-only so it stays reachable on mobile */}
+      <button
+        onClick={toggleEqPanel}
+        aria-label="Ecualizador"
+        aria-pressed={eqPanelOpen}
+        style={{
+          background: eqPanelOpen ? 'var(--bg-elevated)' : 'none',
+          border: 'none', borderRadius: 6,
+          color: eqPanelOpen ? 'var(--accent-primary)' : 'var(--text-secondary)',
+          cursor: 'pointer', fontSize: 16, padding: '4px 6px',
+        }}
+      >
+        🎚️
+      </button>
     </footer>
   );
 }

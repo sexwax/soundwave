@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { usePlayerStore } from '../../modules/player/store/playerStore';
 import { getActiveSource } from '../../shared/audio/playbackCoordinator';
 import { toggleRadio } from '../../modules/radio/services/radioPlayer';
+import { useEqStore } from '../../shared/audio/eqStore';
 import * as localEngine from '../../modules/player/services/localEngine';
 
 const SEEK_STEP_SECONDS = 10;
@@ -62,6 +63,9 @@ export function useKeyboardShortcuts() {
           break;
         case 'KeyM':
           player.toggleMute();
+          break;
+        case 'KeyE':
+          useEqStore.getState().togglePanel();
           break;
       }
     };

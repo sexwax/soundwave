@@ -4,6 +4,7 @@ const SHORTCUTS: { keys: string; description: string }[] = [
   { keys: 'Shift + ← / →', description: 'Retroceder / avanzar 10 segundos (solo local)' },
   { keys: '↑ / ↓', description: 'Subir / bajar volumen 5%' },
   { keys: 'M', description: 'Silenciar / activar sonido' },
+  { keys: 'E', description: 'Abrir / cerrar el ecualizador' },
   { keys: '?', description: 'Mostrar esta ayuda' },
 ];
 

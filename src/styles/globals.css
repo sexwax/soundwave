@@ -242,11 +242,6 @@ h1, h2, h3, h4 {
     transform: translateX(0);
   }
 
-  /* Hide miniplayer extra controls */
-  .miniplayer > div:last-child {
-    display: none;
-  }
-
   /* Search form wraps on tablet */
   .search-form {
     flex-wrap: wrap;

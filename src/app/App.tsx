@@ -8,6 +8,7 @@ import { Sidebar } from '../shared/components/layout/Sidebar';
 import { TopBar } from '../shared/components/layout/TopBar';
 import { MiniPlayer } from '../shared/components/layout/MiniPlayer';
 import { ShortcutsHelp } from '../shared/components/layout/ShortcutsHelp';
+import { EqualizerPanel } from '../shared/components/audio/EqualizerPanel';
 import { Modal } from '../shared/components/ui/Modal';
 import { AppRouter } from './Router';
 import { useKeyboardShortcuts } from '../shared/hooks/useKeyboardShortcuts';
@@ -45,6 +46,7 @@ function AppInner() {
           <AppRouter />
         </main>
       </div>
+      <EqualizerPanel />
       <MiniPlayer />
       <Modal open={showHelp} onClose={closeHelp} title="Atajos de teclado">
         <ShortcutsHelp />

@@ -3,7 +3,7 @@ import { usePlayerStore, type RepeatMode } from '../store/playerStore';
 import { useShallow } from 'zustand/react/shallow';
 import * as localEngine from '../services/localEngine';
 import { TrackList } from './TrackList';
-import { Equalizer } from './Equalizer';
+import { useEqStore } from '../../../shared/audio/eqStore';
 import { Button } from '../../../shared/components/ui/Button';
 import { Slider } from '../../../shared/components/ui/Slider';
 import { Input } from '../../../shared/components/ui/Input';
@@ -31,7 +31,8 @@ export function LocalPlayer() {
     repeatMode: s.repeatMode, cycleRepeatMode: s.cycleRepeatMode, clearQueue: s.clearQueue,
   })));
   const track = currentTrack();
-  const [showEq, setShowEq] = useState(false);
+  const eqPanelOpen = useEqStore((s) => s.panelOpen);
+  const toggleEqPanel = useEqStore((s) => s.togglePanel);
   const [visMode, setVisMode] = useState<VisMode>('bars');
   const [filterText, setFilterText] = useState('');
 
@@ -86,9 +87,10 @@ export function LocalPlayer() {
           {REPEAT_ICON[repeatMode]}
         </Button>
         <Button
-          onClick={() => setShowEq(!showEq)}
-          variant={showEq ? 'primary' : 'ghost'}
+          onClick={toggleEqPanel}
+          variant={eqPanelOpen ? 'primary' : 'ghost'}
           size="sm"
+          aria-pressed={eqPanelOpen}
           className="toolbar-btn"
         >
           🎚️ EQ
@@ -269,9 +271,6 @@ export function LocalPlayer() {
           </div>
         </div>
       )}
-
-      {/* EQ */}
-      {showEq && <Equalizer />}
 
       {/* Crossfade */}
       <Slider

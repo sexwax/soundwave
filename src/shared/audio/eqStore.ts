@@ -18,9 +18,12 @@ interface EqState {
   enabled: boolean;
   gains: number[];
   preset: string;
+  /** UI-only: whether the EqualizerPanel is open. Never persisted. */
+  panelOpen: boolean;
   setGain: (index: number, value: number) => void;
   applyPreset: (name: string) => void;
   setEnabled: (v: boolean) => void;
+  togglePanel: () => void;
 }
 
 export const useEqStore = create<EqState>()(
@@ -29,6 +32,7 @@ export const useEqStore = create<EqState>()(
       enabled: true,
       gains: [...EQ_PRESETS.Flat],
       preset: 'Flat',
+      panelOpen: false,
       setGain: (index, value) =>
         set((s) => {
           const gains = [...s.gains];
@@ -40,8 +44,13 @@ export const useEqStore = create<EqState>()(
         if (values) set({ gains: [...values], preset: name });
       },
       setEnabled: (v) => set({ enabled: v }),
+      togglePanel: () => set((s) => ({ panelOpen: !s.panelOpen })),
     }),
-    { name: 'soundwave-eq', version: 1 },
+    {
+      name: 'soundwave-eq',
+      version: 1,
+      partialize: (s) => ({ enabled: s.enabled, gains: s.gains, preset: s.preset }),
+    },
   ),
 );
 

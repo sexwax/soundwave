@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { usePlayerStore, selectCurrentTrack } from '../store/playerStore';
-import { useEqStore, effectiveGains } from '../store/eqStore';
+import { useEqStore, effectiveGains } from '../../../shared/audio/eqStore';
 import { setEqGains } from '../../../shared/audio/audioGraph';
 import * as localEngine from '../services/localEngine';
 

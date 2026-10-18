@@ -15,6 +15,7 @@ import { useRadioStore, type RadioStation, type RadioStatus } from '../modules/r
 import { useRadioBrowser } from '../modules/radio/hooks/useRadioBrowser';
 import { radioBrowserApi } from '../modules/radio/services/radioBrowserApi';
 import { playStation, toggleRadio, stopRadio } from '../modules/radio/services/radioPlayer';
+import { useEqStore } from '../shared/audio/eqStore';
 
 const STATUS_LABEL: Record<RadioStatus, string> = {
   idle: 'Inactivo',
@@ -45,6 +46,8 @@ export default function RadioPage() {
   const [selectedStation, setSelectedStation] = useState<RadioStation | null>(null);
   const [showShare, setShowShare] = useState(false);
   const [visMode, setVisMode] = useState<VisMode>('bars');
+  const eqPanelOpen = useEqStore((s) => s.panelOpen);
+  const toggleEqPanel = useEqStore((s) => s.togglePanel);
   const q = searchParams.get('q');
 
   // React to `?q=` changes even while already on /radio (not just on mount).
@@ -162,6 +165,21 @@ export default function RadioPage() {
 
           {/* Vis mode selector */}
           <VisModeToggle mode={visMode} onChange={setVisMode} />
+
+          {/* EQ toggle — same global panel LocalPlayer opens */}
+          <button
+            onClick={toggleEqPanel}
+            aria-label="Ecualizador"
+            aria-pressed={eqPanelOpen}
+            style={{
+              background: eqPanelOpen ? 'var(--accent-primary)' : 'var(--bg-base)',
+              border: '1px solid var(--border-subtle)',
+              color: eqPanelOpen ? 'var(--bg-base)' : 'var(--text-secondary)',
+              borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 14,
+            }}
+          >
+            🎚️
+          </button>
 
           <button
             onClick={() => setShowShare(true)}
