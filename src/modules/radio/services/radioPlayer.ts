@@ -21,6 +21,7 @@ const RECONNECT_DELAYS_MS = [1000, 2000, 4000];
 function supportsNativeHls(): boolean {
   if (typeof document === 'undefined') return false;
   const probe = document.createElement('video');
+  if (typeof probe.canPlayType !== 'function') return false;
   return probe.canPlayType('application/vnd.apple.mpegurl') !== '';
 }
 
@@ -76,6 +77,18 @@ function destroyHls(): void {
   }
 }
 
+/** Fully detaches both audio elements — used before a new connect attempt and on pause/stop. */
+function resetElements(): void {
+  destroyHls();
+  for (const node of [corsEl, plainEl]) {
+    if (node) {
+      node.pause();
+      node.removeAttribute('src');
+      node.load();
+    }
+  }
+}
+
 function scheduleReconnect(): void {
   if (reconnectAttempts >= RECONNECT_DELAYS_MS.length) {
     useRadioStore.getState().setStatus('error');
@@ -86,8 +99,9 @@ function scheduleReconnect(): void {
   reconnectAttempts++;
   useRadioStore.getState().setStatus('connecting');
   const stationToRetry = current;
+  const mySession = session;
   setTimeout(() => {
-    if (stationToRetry && current === stationToRetry) {
+    if (mySession === session && stationToRetry && current === stationToRetry) {
       void playStation(stationToRetry);
     }
   }, delay);
@@ -137,10 +151,16 @@ function getPlainEl(): HTMLAudioElement {
   return plainEl;
 }
 
-async function tryHlsAttempt(node: HTMLAudioElement, url: string, mySession: number): Promise<boolean> {
+type AttemptResult = 'ok' | 'error' | 'blocked';
+
+function isNotAllowedError(err: unknown): boolean {
+  return err instanceof DOMException && err.name === 'NotAllowedError';
+}
+
+async function tryHlsAttempt(node: HTMLAudioElement, url: string, mySession: number): Promise<AttemptResult> {
   const { default: Hls } = await import('hls.js');
-  if (mySession !== session) return false;
-  if (!Hls.isSupported()) return false;
+  if (mySession !== session) return 'error';
+  if (!Hls.isSupported()) return 'error';
 
   destroyHls();
   const instance = new Hls();
@@ -148,61 +168,61 @@ async function tryHlsAttempt(node: HTMLAudioElement, url: string, mySession: num
   instance.loadSource(url);
   instance.attachMedia(node);
 
-  return new Promise<boolean>((resolve) => {
+  return new Promise<AttemptResult>((resolve) => {
     let settled = false;
-    const finish = (ok: boolean) => {
+    const finish = (result: AttemptResult) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
       instance.off(Hls.Events.ERROR, onHlsError);
       node.removeEventListener('playing', onPlaying);
-      resolve(ok);
+      resolve(result);
     };
-    const onPlaying = () => { if (mySession === session) finish(true); };
-    const onHlsError = (_event: unknown, data: { fatal: boolean }) => { if (data.fatal) finish(false); };
-    const timer = setTimeout(() => finish(false), STREAM_TIMEOUT_MS);
+    const onPlaying = () => { if (mySession === session) finish('ok'); };
+    const onHlsError = (_event: unknown, data: { fatal: boolean }) => { if (data.fatal) finish('error'); };
+    const timer = setTimeout(() => finish('error'), STREAM_TIMEOUT_MS);
     node.addEventListener('playing', onPlaying);
     instance.on(Hls.Events.ERROR, onHlsError);
     applyVolumeToEl(node);
-    node.play().catch(() => finish(false));
+    node.play().catch((err) => finish(isNotAllowedError(err) ? 'blocked' : 'error'));
   });
 }
 
-async function tryPlainAttempt(node: HTMLAudioElement, url: string, mySession: number): Promise<boolean> {
+async function tryPlainAttempt(node: HTMLAudioElement, url: string, mySession: number): Promise<AttemptResult> {
   node.src = url;
   node.load();
 
-  return new Promise<boolean>((resolve) => {
+  return new Promise<AttemptResult>((resolve) => {
     let settled = false;
-    const finish = (ok: boolean) => {
+    const finish = (result: AttemptResult) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
       node.removeEventListener('playing', onPlaying);
       node.removeEventListener('error', onError);
-      resolve(ok);
+      resolve(result);
     };
-    const onPlaying = () => { if (mySession === session) finish(true); };
-    const onError = () => finish(false);
-    const timer = setTimeout(() => finish(false), STREAM_TIMEOUT_MS);
+    const onPlaying = () => { if (mySession === session) finish('ok'); };
+    const onError = () => finish('error');
+    const timer = setTimeout(() => finish('error'), STREAM_TIMEOUT_MS);
     node.addEventListener('playing', onPlaying);
     node.addEventListener('error', onError);
     applyVolumeToEl(node);
-    node.play().catch(() => finish(false));
+    node.play().catch((err) => finish(isNotAllowedError(err) ? 'blocked' : 'error'));
   });
 }
 
-async function tryAttempt(attempt: StreamAttempt, mySession: number): Promise<boolean> {
+async function tryAttempt(attempt: StreamAttempt, mySession: number): Promise<AttemptResult> {
   const node = attempt.el === 'cors' ? getCorsEl() : getPlainEl();
   activeEl = node;
 
   await resumeAudio();
-  const ok = attempt.hls && attempt.el === 'cors'
+  const result = attempt.hls && attempt.el === 'cors'
     ? await tryHlsAttempt(node, attempt.url, mySession)
     : await tryPlainAttempt(node, attempt.url, mySession);
 
-  if (ok && attempt.el === 'cors') routeThroughGraph(node);
-  return ok;
+  if (result === 'ok' && attempt.el === 'cors') routeThroughGraph(node);
+  return result;
 }
 
 export async function playStation(station: RadioStation): Promise<void> {
@@ -211,6 +231,7 @@ export async function playStation(station: RadioStation): Promise<void> {
   claimPlayback('radio');
   useRadioStore.getState().setCurrentStation(station);
   useRadioStore.getState().setStatus('connecting');
+  resetElements();
 
   const proxyUrl = import.meta.env.VITE_CORS_PROXY_URL || '';
   const attempts = buildStreamAttempts(station, proxyUrl);
@@ -225,9 +246,10 @@ export async function playStation(station: RadioStation): Promise<void> {
 
   for (const attempt of attempts) {
     if (mySession !== session) return; // superseded by a newer click
-    const ok = await tryAttempt(attempt, mySession);
+    const result = await tryAttempt(attempt, mySession);
     if (mySession !== session) return;
-    if (ok) {
+
+    if (result === 'ok') {
       useRadioStore.getState().setStatus('playing');
       useRadioStore.getState().setRouted(attempt.el === 'cors');
       reconnectAttempts = 0;
@@ -240,6 +262,14 @@ export async function playStation(station: RadioStation): Promise<void> {
       });
       return;
     }
+
+    if (result === 'blocked') {
+      useRadioStore.getState().setStatus('paused');
+      notify('Pulsa ▶ para escuchar la emisora', 'info');
+      return;
+    }
+
+    resetElements();
   }
 
   if (mySession === session) {
@@ -251,11 +281,7 @@ export async function playStation(station: RadioStation): Promise<void> {
 /** Cuts the stream and marks the radio as paused. Resumable with `resumeRadio`. */
 export function pauseRadio(): void {
   session++; // invalidate any in-flight connect/reconnect attempts
-  destroyHls();
-  if (activeEl) {
-    activeEl.removeAttribute('src');
-    activeEl.load();
-  }
+  resetElements();
   useRadioStore.getState().setStatus('paused');
 }
 
@@ -273,11 +299,7 @@ export function toggleRadio(): void {
 /** Stops radio playback and resets radio store state. Safe to call when nothing is playing. */
 export function stopRadio(): void {
   session++;
-  destroyHls();
-  if (activeEl) {
-    activeEl.removeAttribute('src');
-    activeEl.load();
-  }
+  resetElements();
   reconnectAttempts = 0;
   useRadioStore.getState().setStatus('idle');
   useRadioStore.getState().setRouted(false);

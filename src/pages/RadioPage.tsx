@@ -44,17 +44,21 @@ export default function RadioPage() {
   const [selectedStation, setSelectedStation] = useState<RadioStation | null>(null);
   const [showShare, setShowShare] = useState(false);
   const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
+  const q = searchParams.get('q');
 
   // React to `?q=` changes even while already on /radio (not just on mount).
   useEffect(() => {
-    const q = searchParams.get('q');
     if (q) {
       setSearchQuery(q);
       search({ name: q, limit: 50 });
-    } else if (stations.length === 0) {
-      loadTopStations();
     }
-  }, [searchParams, setSearchQuery, search, loadTopStations, stations.length]);
+  }, [q, setSearchQuery, search]);
+
+  // Mount-only: load the top stations when landing on /radio without a search query.
+  useEffect(() => {
+    if (!q && useRadioStore.getState().stations.length === 0) loadTopStations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Deep link to a specific station: play it if already loaded, otherwise fetch it by uuid.
   useEffect(() => {
