@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { usePlayerStore } from '../../modules/player/store/playerStore';
 import { useRadioStore } from '../../modules/radio/store/radioStore';
 import * as localEngine from '../../modules/player/services/localEngine';
+import { toggleRadio } from '../../modules/radio/services/radioPlayer';
 
 const SEEK_STEP_SECONDS = 10;
 
@@ -12,9 +13,6 @@ export function useKeyboardShortcuts() {
       isPlaying: s.isPlaying, setIsPlaying: s.setIsPlaying, toggleMute: s.toggleMute,
       nextTrack: s.nextTrack, prevTrack: s.prevTrack,
     })),
-  );
-  const { isPlaying: radioIsPlaying, setIsPlaying: setRadioIsPlaying } = useRadioStore(
-    useShallow((s) => ({ isPlaying: s.isPlaying, setIsPlaying: s.setIsPlaying })),
   );
   const playerTrack = usePlayerStore((s) => s.currentTrack());
   const radioStation = useRadioStore((s) => s.currentStation);
@@ -32,7 +30,7 @@ export function useKeyboardShortcuts() {
         case 'Space':
           e.preventDefault();
           if (isRadioActive) {
-            setRadioIsPlaying(!radioIsPlaying);
+            toggleRadio();
           } else {
             setIsPlaying(!isPlaying);
           }
@@ -63,5 +61,5 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isPlaying, radioIsPlaying, isRadioActive, isLocalActive, setIsPlaying, setRadioIsPlaying, toggleMute, nextTrack, prevTrack]);
+  }, [isPlaying, isRadioActive, isLocalActive, setIsPlaying, toggleMute, nextTrack, prevTrack]);
 }

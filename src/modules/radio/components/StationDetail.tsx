@@ -12,8 +12,8 @@ interface Props {
 }
 
 export function StationDetail({ station, onClose }: Props) {
-  const { currentStation, isPlaying, status } = useRadioStore(
-    useShallow((s) => ({ currentStation: s.currentStation, isPlaying: s.isPlaying, status: s.status })),
+  const { currentStation, status } = useRadioStore(
+    useShallow((s) => ({ currentStation: s.currentStation, status: s.status })),
   );
   const favorites = useFavoritesStore((s) => s.favorites);
   const addFavorite = useFavoritesStore((s) => s.addFavorite);

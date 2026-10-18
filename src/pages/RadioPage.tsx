@@ -10,122 +10,81 @@ import { StationDetail } from '../modules/radio/components/StationDetail';
 import { Modal } from '../shared/components/ui/Modal';
 import { SharePanel } from '../modules/radio/components/SharePanel';
 import { Spinner } from '../shared/components/ui/Spinner';
-import { useRadioStore, type RadioStation } from '../modules/radio/store/radioStore';
+import { useRadioStore, type RadioStation, type RadioStatus } from '../modules/radio/store/radioStore';
 import { useRadioBrowser } from '../modules/radio/hooks/useRadioBrowser';
-import { useStreamCheck } from '../modules/radio/hooks/useStreamCheck';
 import { radioBrowserApi } from '../modules/radio/services/radioBrowserApi';
-import { proxify, proxyHttp } from '../shared/utils/corsProxy';
-import { Howl } from 'howler';
-import { getRadioHowl, setRadioHowl, stopRadio } from '../modules/radio/services/radioPlayer';
-import * as localEngine from '../modules/player/services/localEngine';
+import { playStation, toggleRadio, stopRadio } from '../modules/radio/services/radioPlayer';
+
+const STATUS_LABEL: Record<RadioStatus, string> = {
+  idle: 'Inactivo',
+  connecting: 'Conectando…',
+  playing: 'En directo',
+  paused: 'En pausa',
+  error: 'Error — toca para reintentar',
+};
+
+const STATUS_ICON: Record<RadioStatus, string> = {
+  idle: '📻',
+  connecting: '⏳',
+  playing: '🔊',
+  paused: '⏸',
+  error: '⚠️',
+};
 
 export default function RadioPage() {
   const { uuid } = useParams();
   const [searchParams] = useSearchParams();
-  const { stations, isLoading, currentStation, setCurrentStation, setIsPlaying, setStatus, status } = useRadioStore(
+  const { stations, isLoading, currentStation, routed, status, setSearchQuery } = useRadioStore(
     useShallow((s) => ({
       stations: s.stations, isLoading: s.isLoading, currentStation: s.currentStation,
-      setCurrentStation: s.setCurrentStation, setIsPlaying: s.setIsPlaying, setStatus: s.setStatus, status: s.status,
+      routed: s.routed, status: s.status, setSearchQuery: s.setSearchQuery,
     })),
   );
   const { loadTopStations, search } = useRadioBrowser();
-  const { check } = useStreamCheck();
   const [selectedStation, setSelectedStation] = useState<RadioStation | null>(null);
   const [showShare, setShowShare] = useState(false);
   const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
 
-  // Load top stations on mount
+  // React to `?q=` changes even while already on /radio (not just on mount).
   useEffect(() => {
     const q = searchParams.get('q');
-    if (q) search({ name: q, limit: 50 });
-    else if (stations.length === 0) loadTopStations();
-  }, []);
-
-  const playStation = async (station: RadioStation) => {
-    setSelectedStation(station);
-    setCurrentStation(station);
-    setStatus('connecting');
-    setIsPlaying(true);
-
-    // Stop local player if it's running
-    localEngine.pause();
-
-    const url = station.url_resolved || station.url;
-
-    // Stop previous radio
-    const prev = getRadioHowl();
-    if (prev) {
-      prev.unload();
-      setRadioHowl(null);
+    if (q) {
+      setSearchQuery(q);
+      search({ name: q, limit: 50 });
+    } else if (stations.length === 0) {
+      loadTopStations();
     }
+  }, [searchParams, setSearchQuery, search, loadTopStations, stations.length]);
 
-    // Check URL validity
-    const valid = await check(url);
-    if (!valid) {
-      setStatus('offline');
-      return;
-    }
+  // Deep link to a specific station: play it if already loaded, otherwise fetch it by uuid.
+  useEffect(() => {
+    if (!uuid) return;
+    const stationUuid = uuid;
+    let cancelled = false;
 
-    radioBrowserApi.registerClick(station.stationuuid);
-
-    // Try URLs in order: proxy -> direct -> AllOrigins (for HTTP-only streams)
-    const isHttp = url.startsWith('http://');
-    const tryUrls = [
-      proxify(url),           // 1. CORS proxy (Cloudflare Worker)
-      url,                    // 2. Direct URL
-      ...(isHttp ? [proxyHttp(url)] : []), // 3. AllOrigins for HTTP streams
-    ].filter((u, i, arr) => u !== arr[i - 1]); // dedupe if no proxy configured
-
-    const tryPlay = (urls: string[], retries = 0) => {
-      if (urls.length === 0) {
-        setStatus('error');
+    async function connectToDeepLinkedStation() {
+      const existing = stations.find((s) => s.stationuuid === stationUuid);
+      if (existing) {
+        if (!cancelled) void playStation(existing);
         return;
       }
-
-      const [currentUrl, ...rest] = urls;
-
-      const howl = new Howl({
-        src: [currentUrl],
-        html5: true,
-        format: station.hls ? ['m3u8'] : ['mp3', 'aac', 'ogg'],
-        onplay: () => {
-          console.log('Stream playing:', currentUrl);
-          setStatus('playing');
-        },
-        onloaderror: (err) => {
-          console.error('Stream load error:', currentUrl, err);
-          if (rest.length > 0) {
-            setTimeout(() => tryPlay(rest), 500);
-          } else {
-            setStatus('error');
-          }
-        },
-        onplayerror: (err) => {
-          console.error('Stream play error:', currentUrl, err);
-          if (rest.length > 0) {
-            setTimeout(() => tryPlay(rest), 500);
-          } else {
-            setStatus('error');
-          }
-        },
-        onstop: () => setStatus('idle'),
-      });
-      setRadioHowl(howl);
-      howl.play();
-    };
-
-    tryPlay(tryUrls);
-  };
-
-  // Handle deep link to specific station
-  useEffect(() => {
-    if (uuid && stations.length > 0) {
-      const s = stations.find((s) => s.stationuuid === uuid);
-      if (s) playStation(s);
+      try {
+        const [found] = await radioBrowserApi.byUuid(stationUuid);
+        if (!cancelled && found) void playStation(found);
+      } catch {
+        // Network error resolving the deep link — the page stays on the normal list view.
+      }
     }
-  }, [uuid, stations]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const stopStation = () => stopRadio();
+    void connectToDeepLinkedStation();
+    return () => { cancelled = true; };
+    // Only re-run when the uuid itself changes — `stations` is read from the latest snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uuid]);
+
+  const retryCurrentStation = () => {
+    if (currentStation) void playStation(currentStation);
+  };
 
   return (
     <PageTransition>
@@ -153,18 +112,26 @@ export default function RadioPage() {
           border: `1px solid var(--accent-primary)33`,
         }}>
           <span style={{ fontSize: 20 }}>
-            {status === 'playing' ? '🔊' : '⏳'}
+            {STATUS_ICON[status]}
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{currentStation.name}</div>
-            <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-              {status}
+            <div
+              style={{ fontSize: 11, color: status === 'error' ? 'var(--accent-danger)' : 'var(--text-secondary)', cursor: status === 'error' ? 'pointer' : 'default' }}
+              onClick={status === 'error' ? retryCurrentStation : undefined}
+            >
+              {STATUS_LABEL[status]}
             </div>
+            {!routed && (status === 'playing' || status === 'paused') && (
+              <div style={{ fontSize: 10, color: 'var(--text-disabled)', marginTop: 2 }}>
+                Visualizador y EQ no disponibles para esta emisora (el servidor no permite CORS)
+              </div>
+            )}
           </div>
 
           {/* Play/Pause for radio */}
           <button
-            onClick={() => setIsPlaying(!useRadioStore.getState().isPlaying)}
+            onClick={toggleRadio}
             style={{
               background: 'var(--accent-primary)',
               border: 'none',
@@ -180,7 +147,7 @@ export default function RadioPage() {
             }}
             aria-label={status === 'playing' ? 'Pausar' : 'Reproducir'}
           >
-            {status === 'playing' ? '⏸' : '▶'}
+            {status === 'playing' || status === 'connecting' ? '⏸' : '▶'}
           </button>
 
           {/* Visualizer */}
@@ -240,7 +207,7 @@ export default function RadioPage() {
           >
             🔗 Compartir
           </button>
-          <button onClick={stopStation} style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+          <button onClick={stopRadio} style={{ background: 'var(--accent-danger)', border: 'none', color: 'white', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
             ⏹ Stop
           </button>
         </div>
@@ -266,7 +233,8 @@ export default function RadioPage() {
                 key={station.stationuuid}
                 station={station}
                 index={i}
-                onClick={() => { setSelectedStation(station); playStation(station); }}
+                onClick={() => playStation(station)}
+                onShowDetail={() => setSelectedStation(station)}
               />
             ))}
           </div>

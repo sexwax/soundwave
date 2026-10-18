@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useShallow } from 'zustand/react/shallow';
-import { useRadioStore, type RadioStation } from '../store/radioStore';
+import { useRadioStore, isRadioPlaying, type RadioStation } from '../store/radioStore';
 import { useFavoritesStore } from '../../favorites/store/favoritesStore';
 import { flagEmoji } from '../../../shared/utils/formatters';
 import { Badge } from '../../../shared/components/ui/Badge';
@@ -8,12 +8,13 @@ import { Badge } from '../../../shared/components/ui/Badge';
 interface Props {
   station: RadioStation;
   onClick: () => void;
+  onShowDetail: () => void;
   index?: number;
 }
 
-export function StationCard({ station, onClick, index = 0 }: Props) {
+export function StationCard({ station, onClick, onShowDetail, index = 0 }: Props) {
   const { currentStation, isPlaying } = useRadioStore(
-    useShallow((s) => ({ currentStation: s.currentStation, isPlaying: s.isPlaying })),
+    useShallow((s) => ({ currentStation: s.currentStation, isPlaying: isRadioPlaying(s) })),
   );
   const favorites = useFavoritesStore((s) => s.favorites);
   const addFavorite = useFavoritesStore((s) => s.addFavorite);
@@ -97,6 +98,20 @@ export function StationCard({ station, onClick, index = 0 }: Props) {
           {station.codec && <Badge>{station.codec}</Badge>}
         </div>
       </div>
+
+      {/* Detail button */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onShowDetail(); }}
+        aria-label="Detalles"
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer', fontSize: 16,
+          color: 'var(--text-disabled)',
+          flexShrink: 0,
+          padding: 4,
+        }}
+      >
+        ⓘ
+      </button>
 
       {/* Fav button */}
       <button

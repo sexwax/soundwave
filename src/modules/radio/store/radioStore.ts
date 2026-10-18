@@ -18,12 +18,15 @@ export interface RadioStation {
   lastcheckok: number;
 }
 
+export type RadioStatus = 'idle' | 'connecting' | 'playing' | 'paused' | 'error';
+
 interface RadioState {
   stations: RadioStation[];
   currentStation: RadioStation | null;
-  isPlaying: boolean;
+  /** Whether the active stream is routed through the Web Audio graph (CORS-enabled). */
+  routed: boolean;
   isLoading: boolean;
-  status: 'idle' | 'connecting' | 'playing' | 'error' | 'offline';
+  status: RadioStatus;
   searchQuery: string;
   filters: {
     country: string;
@@ -36,17 +39,22 @@ interface RadioState {
   };
   setStations: (s: RadioStation[]) => void;
   setCurrentStation: (s: RadioStation | null) => void;
-  setIsPlaying: (v: boolean) => void;
+  setRouted: (v: boolean) => void;
   setIsLoading: (v: boolean) => void;
-  setStatus: (v: RadioState['status']) => void;
+  setStatus: (v: RadioStatus) => void;
   setSearchQuery: (q: string) => void;
   updateFilter: <K extends keyof RadioState['filters']>(key: K, value: RadioState['filters'][K]) => void;
+}
+
+/** Derives the simple "is it audibly playing" flag that used to be stored directly. */
+export function isRadioPlaying(s: Pick<RadioState, 'status'>): boolean {
+  return s.status === 'playing';
 }
 
 export const useRadioStore = create<RadioState>((set) => ({
   stations: [],
   currentStation: null,
-  isPlaying: false,
+  routed: false,
   isLoading: false,
   status: 'idle',
   searchQuery: '',
@@ -61,7 +69,7 @@ export const useRadioStore = create<RadioState>((set) => ({
   },
   setStations: (s) => set({ stations: s }),
   setCurrentStation: (s) => set({ currentStation: s }),
-  setIsPlaying: (v) => set({ isPlaying: v }),
+  setRouted: (v) => set({ routed: v }),
   setIsLoading: (v) => set({ isLoading: v }),
   setStatus: (v) => set({ status: v }),
   setSearchQuery: (q) => set({ searchQuery: q }),
