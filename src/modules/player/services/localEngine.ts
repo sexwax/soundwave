@@ -96,9 +96,13 @@ function attachListeners(node: HTMLAudioElement): void {
 }
 
 export function load(track: LocalTrack): void {
-  const node = getElement();
   const url = getFileUrl(track.filePath);
-  node.src = url ?? '';
+  if (!url) {
+    notify('Archivo no disponible, vuelve a abrir la carpeta', 'warning');
+    return;
+  }
+  const node = getElement();
+  node.src = url;
   usePlayerStore.getState().setCurrentTime(0);
   usePlayerStore.getState().setDuration(0);
 }
@@ -109,7 +113,9 @@ export async function play(): Promise<void> {
   await resumeAudio();
   routeThroughGraph(node);
   const { crossfadeDuration } = usePlayerStore.getState();
-  node.volume = crossfadeDuration > 0 ? 0 : baseVolume;
+  node.volume = crossfadeDuration > 0 && node.currentTime < crossfadeDuration
+    ? 0
+    : effectiveVolume(node.currentTime, node.duration, crossfadeDuration);
   startCrossfadeTicker();
   try {
     await node.play();
