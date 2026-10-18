@@ -10,8 +10,8 @@ const SEEK_STEP_SECONDS = 10;
 
 export function useMediaSession() {
   const activeSource = usePlaybackStore((s) => s.active);
-  const { isPlaying, nextTrack, prevTrack, setIsPlaying } = usePlayerStore(
-    useShallow((s) => ({ isPlaying: s.isPlaying, nextTrack: s.nextTrack, prevTrack: s.prevTrack, setIsPlaying: s.setIsPlaying })),
+  const { isPlaying, nextTrack, setIsPlaying } = usePlayerStore(
+    useShallow((s) => ({ isPlaying: s.isPlaying, nextTrack: s.nextTrack, setIsPlaying: s.setIsPlaying })),
   );
   const playerTrack = usePlayerStore((s) => s.currentTrack());
   const radioStation = useRadioStore((s) => s.currentStation);
@@ -46,7 +46,7 @@ export function useMediaSession() {
       if (isRadioActive) pauseRadio();
       else setIsPlaying(false);
     });
-    navigator.mediaSession.setActionHandler('previoustrack', isRadioActive ? null : () => prevTrack());
+    navigator.mediaSession.setActionHandler('previoustrack', isRadioActive ? null : () => localEngine.previous());
     navigator.mediaSession.setActionHandler('nexttrack', isRadioActive ? null : () => nextTrack());
 
     // Seeking a live stream doesn't mean anything — only local tracks get these.
@@ -71,7 +71,7 @@ export function useMediaSession() {
       navigator.mediaSession.setActionHandler('seekbackward', null);
       navigator.mediaSession.setActionHandler('seekforward', null);
     };
-  }, [isRadioActive, playerTrack, radioStation, radioPlaying, isPlaying, nextTrack, prevTrack, setIsPlaying]);
+  }, [isRadioActive, playerTrack, radioStation, radioPlaying, isPlaying, nextTrack, setIsPlaying]);
 
   // Position updates are high-frequency (every `timeupdate`) — sync via a plain
   // store subscription instead of a selector, so this never re-renders the app.

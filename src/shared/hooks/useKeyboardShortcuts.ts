@@ -39,13 +39,13 @@ export function useKeyboardShortcuts() {
           if (e.target instanceof HTMLElement && e.target.tagName === 'BUTTON') return;
           e.preventDefault();
           if (activeSource === 'radio') toggleRadio();
-          else if (activeSource === 'local') player.setIsPlaying(!player.isPlaying);
+          else if (activeSource === 'local' || player.queue.length > 0) player.setIsPlaying(!player.isPlaying);
           break;
         }
         case 'ArrowLeft':
           if (activeSource !== 'local') break;
           if (e.shiftKey) localEngine.seekBy(-SEEK_STEP_SECONDS);
-          else player.prevTrack();
+          else localEngine.previous();
           break;
         case 'ArrowRight':
           if (activeSource !== 'local') break;
