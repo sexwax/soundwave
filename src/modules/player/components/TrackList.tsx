@@ -2,7 +2,7 @@ import { useRef, useEffect, useMemo } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { usePlayerStore } from '../store/playerStore';
 import { useShallow } from 'zustand/react/shallow';
-import { formatTime } from '../../../shared/utils/audioUtils';
+import { formatTime } from '../../../shared/utils/formatters';
 import type { LocalTrack } from '../../favorites/db/favoritesDb';
 
 const VIRTUAL_THRESHOLD = 100;

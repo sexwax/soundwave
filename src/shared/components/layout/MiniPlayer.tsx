@@ -3,7 +3,7 @@ import { usePlayerStore } from '../../../modules/player/store/playerStore';
 import { useRadioStore } from '../../../modules/radio/store/radioStore';
 import { usePlaybackStore } from '../../audio/playbackCoordinator';
 import { useShallow } from 'zustand/react/shallow';
-import { formatTime } from '../../utils/audioUtils';
+import { formatTime } from '../../utils/formatters';
 
 export function MiniPlayer() {
   const {
