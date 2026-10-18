@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { usePlayerStore } from '../../../modules/player/store/playerStore';
 import { useRadioStore } from '../../../modules/radio/store/radioStore';
+import { useShallow } from 'zustand/react/shallow';
 import { formatTime } from '../../utils/audioUtils';
 
 function formatTimeStable(seconds: number): string {
@@ -14,7 +15,12 @@ export function MiniPlayer() {
   const {
     volume, setVolume, isMuted, toggleMute, setMuted,
     currentTime, duration,
-  } = usePlayerStore();
+  } = usePlayerStore(
+    useShallow((s) => ({
+      volume: s.volume, setVolume: s.setVolume, isMuted: s.isMuted, toggleMute: s.toggleMute, setMuted: s.setMuted,
+      currentTime: s.currentTime, duration: s.duration,
+    })),
+  );
   const playerTrack = usePlayerStore((s) => s.currentTrack());
   const radioStation = useRadioStore((s) => s.currentStation);
 

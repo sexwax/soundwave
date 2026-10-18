@@ -1,9 +1,12 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useRadioStore } from '../store/radioStore';
 import { Slider } from '../../../shared/components/ui/Slider';
 import { Input } from '../../../shared/components/ui/Input';
 
 export function StationFilters() {
-  const { filters, updateFilter } = useRadioStore();
+  const { filters, updateFilter } = useRadioStore(
+    useShallow((s) => ({ filters: s.filters, updateFilter: s.updateFilter })),
+  );
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: '12px 0' }}>

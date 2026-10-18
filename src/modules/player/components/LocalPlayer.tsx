@@ -1,6 +1,7 @@
 import { useLocalFiles } from '../hooks/useLocalFiles';
 import { usePlayerStore } from '../store/playerStore';
-import { useAudioEngine } from '../hooks/useAudioEngine';
+import { useShallow } from 'zustand/react/shallow';
+import * as localEngine from '../services/localEngine';
 import { TrackList } from './TrackList';
 import { Equalizer } from './Equalizer';
 import { FileTree } from './FileTree';
@@ -13,14 +14,20 @@ import type { LocalTrack } from '../../favorites/db/favoritesDb';
 
 export function LocalPlayer() {
   const { openDirectory, openFiles, isIndexing } = useLocalFiles();
-  const { seek } = useAudioEngine();
   const {
     queue, isShuffled, toggleShuffle, crossfadeDuration, setCrossfade,
     setCurrentIndex, setIsPlaying,
     currentTime, duration,
     volume, setVolume, isMuted, toggleMute,
-    currentTrack, isPlaying, nextTrack, prevTrack
-  } = usePlayerStore();
+    currentTrack, isPlaying,
+  } = usePlayerStore(useShallow((s) => ({
+    queue: s.queue, isShuffled: s.isShuffled, toggleShuffle: s.toggleShuffle,
+    crossfadeDuration: s.crossfadeDuration, setCrossfade: s.setCrossfade,
+    setCurrentIndex: s.setCurrentIndex, setIsPlaying: s.setIsPlaying,
+    currentTime: s.currentTime, duration: s.duration,
+    volume: s.volume, setVolume: s.setVolume, isMuted: s.isMuted, toggleMute: s.toggleMute,
+    currentTrack: s.currentTrack, isPlaying: s.isPlaying,
+  })));
   const track = currentTrack();
   const [showEq, setShowEq] = useState(false);
   const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
@@ -135,7 +142,7 @@ export function LocalPlayer() {
                 min={0}
                 max={duration || 100}
                 value={currentTime}
-                onChange={(e) => seek(Number(e.target.value))}
+                onChange={(e) => localEngine.seek(Number(e.target.value))}
                 style={{
                   flex: 1,
                   height: 4,
@@ -194,7 +201,7 @@ export function LocalPlayer() {
               marginTop: 8,
             }}>
               <Button
-                onClick={prevTrack}
+                onClick={localEngine.previous}
                 variant="ghost"
                 size="sm"
                 aria-label="Anterior"
@@ -212,7 +219,7 @@ export function LocalPlayer() {
                 {isPlaying ? '⏸' : '▶'}
               </Button>
               <Button
-                onClick={nextTrack}
+                onClick={localEngine.next}
                 variant="ghost"
                 size="sm"
                 aria-label="Siguiente"

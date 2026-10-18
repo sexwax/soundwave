@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { useRecorderStore } from '../store/recorderStore';
-import { useAudioContext } from '../../../app/providers/AudioProvider';
+import { useAudioContext } from '../../../app/providers/useAudioContext';
 import { VUMeter } from './VUMeter';
 import { Button } from '../../../shared/components/ui/Button';
 import { getSupportedMimeType, formatFileSize, getFileExtFromMime } from '../../../shared/utils/audioUtils';

@@ -1,36 +1,24 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { subscribeNotifications, type NotifyType } from '../../shared/utils/notify';
+import { NotifCtx, type Toast } from './useNotifications';
 
-interface Toast {
-  id: string;
-  message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-}
-
-interface NotificationContextValue {
-  toast: (message: string, type?: Toast['type']) => void;
-  toasts: Toast[];
-  removeToast: (id: string) => void;
-}
-
-const NotifCtx = createContext<NotificationContextValue>({
-  toast: () => {},
-  toasts: [],
-  removeToast: () => {},
-});
+const TOAST_DURATION_MS = 3500;
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const toast = (message: string, type: Toast['type'] = 'info') => {
-    const id = Math.random().toString(36).slice(2);
-    setToasts((t) => [...t, { id, message, type }]);
-    setTimeout(() => removeToast(id), 3500);
-  };
-
-  const removeToast = (id: string) => {
+  const removeToast = useCallback((id: string) => {
     setToasts((t) => t.filter((x) => x.id !== id));
-  };
+  }, []);
+
+  const toast = useCallback((message: string, type: NotifyType = 'info') => {
+    const id = crypto.randomUUID();
+    setToasts((t) => [...t, { id, message, type }]);
+    setTimeout(() => removeToast(id), TOAST_DURATION_MS);
+  }, [removeToast]);
+
+  useEffect(() => subscribeNotifications(toast), [toast]);
 
   return (
     <NotifCtx.Provider value={{ toast, toasts, removeToast }}>
@@ -83,8 +71,4 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       </div>
     </NotifCtx.Provider>
   );
-}
-
-export function useNotifications() {
-  return useContext(NotifCtx);
 }

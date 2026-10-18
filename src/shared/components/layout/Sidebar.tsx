@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { useTheme } from '../../../app/providers/ThemeProvider';
+import { useTheme } from '../../../app/providers/useTheme';
 import { useState } from 'react';
 
 const NAV_ITEMS = [

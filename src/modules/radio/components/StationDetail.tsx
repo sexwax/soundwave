@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useRadioStore, type RadioStation } from '../store/radioStore';
 import { useFavoritesStore } from '../../favorites/store/favoritesStore';
 import { flagEmoji } from '../../../shared/utils/formatters';
@@ -11,7 +12,9 @@ interface Props {
 }
 
 export function StationDetail({ station, onClose }: Props) {
-  const { currentStation, isPlaying, status } = useRadioStore();
+  const { currentStation, isPlaying, status } = useRadioStore(
+    useShallow((s) => ({ currentStation: s.currentStation, isPlaying: s.isPlaying, status: s.status })),
+  );
   const favorites = useFavoritesStore((s) => s.favorites);
   const addFavorite = useFavoritesStore((s) => s.addFavorite);
   const removeFavorite = useFavoritesStore((s) => s.removeFavorite);

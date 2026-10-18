@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { usePlayerStore } from '../../modules/player/store/playerStore';
 import { useRadioStore } from '../../modules/radio/store/radioStore';
 
 export function useMediaSession() {
-  const { nextTrack, prevTrack, setIsPlaying, isPlaying } = usePlayerStore();
-  const { setIsPlaying: setRadioIsPlaying } = useRadioStore();
+  const { nextTrack, prevTrack, setIsPlaying, isPlaying } = usePlayerStore(
+    useShallow((s) => ({ nextTrack: s.nextTrack, prevTrack: s.prevTrack, setIsPlaying: s.setIsPlaying, isPlaying: s.isPlaying })),
+  );
+  const setRadioIsPlaying = useRadioStore((s) => s.setIsPlaying);
   const playerTrack = usePlayerStore((s) => s.currentTrack());
   const radioStation = useRadioStore((s) => s.currentStation);
   const radioIsPlaying = useRadioStore((s) => s.isPlaying);

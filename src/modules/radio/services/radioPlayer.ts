@@ -1,5 +1,6 @@
 import type { Howl } from 'howler';
 import { useRadioStore } from '../store/radioStore';
+import { registerPlaybackSource } from '../../../shared/audio/playbackCoordinator';
 
 let radioHowl: Howl | null = null;
 
@@ -21,3 +22,5 @@ export function stopRadio() {
   setIsPlaying(false);
   setStatus('idle');
 }
+
+registerPlaybackSource('radio', stopRadio);

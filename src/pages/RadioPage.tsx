@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { PageTransition } from '../shared/components/layout/PageTransition';
 import { Visualizer } from '../shared/components/audio/Visualizer';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -16,14 +17,17 @@ import { radioBrowserApi } from '../modules/radio/services/radioBrowserApi';
 import { proxify, proxyHttp } from '../shared/utils/corsProxy';
 import { Howl } from 'howler';
 import { getRadioHowl, setRadioHowl, stopRadio } from '../modules/radio/services/radioPlayer';
-import { usePlayerStore } from '../modules/player/store/playerStore';
-import { stopLocalPlayer as stopLocalAudioEngine } from '../modules/player/hooks/useAudioEngine';
+import * as localEngine from '../modules/player/services/localEngine';
 
 export default function RadioPage() {
   const { uuid } = useParams();
   const [searchParams] = useSearchParams();
-  const { stations, isLoading, currentStation, setCurrentStation, setIsPlaying, setStatus, status } = useRadioStore();
-  const stopLocalPlayer = usePlayerStore((s) => s.setIsPlaying);
+  const { stations, isLoading, currentStation, setCurrentStation, setIsPlaying, setStatus, status } = useRadioStore(
+    useShallow((s) => ({
+      stations: s.stations, isLoading: s.isLoading, currentStation: s.currentStation,
+      setCurrentStation: s.setCurrentStation, setIsPlaying: s.setIsPlaying, setStatus: s.setStatus, status: s.status,
+    })),
+  );
   const { loadTopStations, search } = useRadioBrowser();
   const { check } = useStreamCheck();
   const [selectedStation, setSelectedStation] = useState<RadioStation | null>(null);
@@ -44,7 +48,7 @@ export default function RadioPage() {
     setIsPlaying(true);
 
     // Stop local player if it's running
-    stopLocalAudioEngine();
+    localEngine.pause();
 
     const url = station.url_resolved || station.url;
 

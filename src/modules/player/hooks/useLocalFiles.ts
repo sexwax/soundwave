@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { parseBlob } from 'music-metadata-browser';
 import { db, type LocalTrack } from '../../favorites/db/favoritesDb';
 import { usePlayerStore } from '../store/playerStore';
-import { registerFile } from './useAudioEngine';
+import { registerFile } from '../services/localEngine';
 
 const AUDIO_EXTENSIONS = ['.mp3', '.flac', '.wav', '.ogg', '.opus', '.aac', '.m4a'];
 
@@ -87,7 +87,7 @@ async function parseTrack(file: File): Promise<LocalTrack> {
 
 export function useLocalFiles() {
   const [isIndexing, setIsIndexing] = useState(false);
-  const { setQueue } = usePlayerStore();
+  const setQueue = usePlayerStore((s) => s.setQueue);
 
   const openDirectory = useCallback(async () => {
     setIsIndexing(true);

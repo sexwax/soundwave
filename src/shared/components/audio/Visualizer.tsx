@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { useAudioContext } from '../../../app/providers/AudioProvider';
+import { useAudioContext } from '../../../app/providers/useAudioContext';
 
 type VisMode = 'bars' | 'wave' | 'circular';
 

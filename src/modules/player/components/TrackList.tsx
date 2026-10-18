@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { usePlayerStore } from '../store/playerStore';
+import { useShallow } from 'zustand/react/shallow';
 import { formatTime } from '../../../shared/utils/audioUtils';
 import type { LocalTrack } from '../../favorites/db/favoritesDb';
 
@@ -60,7 +61,13 @@ function TrackRow({
 }
 
 export function TrackList() {
-  const { queue, shuffledQueue, isShuffled, currentIndex, isPlaying, setCurrentIndex, setIsPlaying } = usePlayerStore();
+  const { queue, shuffledQueue, isShuffled, currentIndex, isPlaying, setCurrentIndex, setIsPlaying } = usePlayerStore(
+    useShallow((s) => ({
+      queue: s.queue, shuffledQueue: s.shuffledQueue, isShuffled: s.isShuffled,
+      currentIndex: s.currentIndex, isPlaying: s.isPlaying,
+      setCurrentIndex: s.setCurrentIndex, setIsPlaying: s.setIsPlaying,
+    })),
+  );
   const parentRef = useRef<HTMLDivElement>(null);
 
   // When shuffle is active, display shuffledQueue so the visual order matches

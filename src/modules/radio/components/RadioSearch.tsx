@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { Input } from '../../../shared/components/ui/Input';
 import { Button } from '../../../shared/components/ui/Button';
 import { useRadioBrowser } from '../hooks/useRadioBrowser';
@@ -7,7 +8,12 @@ import { StationFilters } from './StationFilters';
 
 export function RadioSearch() {
   const { search, loadTopStations, error } = useRadioBrowser();
-  const { searchQuery, setSearchQuery, filters, isLoading, stations } = useRadioStore();
+  const { searchQuery, setSearchQuery, filters, isLoading, stations } = useRadioStore(
+    useShallow((s) => ({
+      searchQuery: s.searchQuery, setSearchQuery: s.setSearchQuery, filters: s.filters,
+      isLoading: s.isLoading, stations: s.stations,
+    })),
+  );
   const [showFilters, setShowFilters] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
