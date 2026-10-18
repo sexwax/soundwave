@@ -134,6 +134,10 @@ export function load(track: LocalTrack): void {
   node.src = url;
   usePlayerStore.getState().setCurrentTime(0);
   usePlayerStore.getState().setDuration(0);
+  // Every explicit load (track change, restart, or replaying after another source)
+  // should log a fresh history entry on its next `playing` — the store's own
+  // consecutive-duplicate check still guards against spamming the same entry.
+  loggedFilePath = null;
 }
 
 export async function play(): Promise<void> {

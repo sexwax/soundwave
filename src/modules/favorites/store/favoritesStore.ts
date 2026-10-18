@@ -20,12 +20,28 @@ interface FavoritesState {
   getDirHandle: (key: string) => Promise<FileSystemDirectoryHandle | undefined>;
 }
 
-function isImportableFavorite(value: unknown): value is Omit<FavoriteStation, 'id' | 'addedAt'> {
+function isImportableFavorite(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return typeof v.stationuuid === 'string' && v.stationuuid.length > 0
     && typeof v.name === 'string' && v.name.length > 0
     && typeof v.url === 'string' && v.url.length > 0;
+}
+
+/** Picks only the known FavoriteStation fields from untrusted input, with safe defaults. */
+function toFavoriteStation(raw: Record<string, unknown>): Omit<FavoriteStation, 'id' | 'addedAt'> {
+  return {
+    stationuuid: String(raw.stationuuid),
+    name: String(raw.name),
+    url: String(raw.url),
+    favicon: typeof raw.favicon === 'string' ? raw.favicon : '',
+    country: typeof raw.country === 'string' ? raw.country : '',
+    countrycode: typeof raw.countrycode === 'string' ? raw.countrycode : undefined,
+    language: typeof raw.language === 'string' ? raw.language : '',
+    tags: typeof raw.tags === 'string' ? raw.tags : '',
+    bitrate: typeof raw.bitrate === 'number' ? raw.bitrate : 0,
+    codec: typeof raw.codec === 'string' ? raw.codec : '',
+  };
 }
 
 export const useFavoritesStore = create<FavoritesState>()(
@@ -105,8 +121,20 @@ export const useFavoritesStore = create<FavoritesState>()(
       importFavorites: (data) => {
         const list = Array.isArray(data) ? data : [data];
         const valid = list.filter(isImportableFavorite);
+
+        // Dedup within the imported batch itself, keeping the first occurrence.
+        const seenInBatch = new Set<string>();
+        const deduped = valid.filter((raw) => {
+          const uuid = String(raw.stationuuid);
+          if (seenInBatch.has(uuid)) return false;
+          seenInBatch.add(uuid);
+          return true;
+        });
+
         const known = new Set(get().favorites.map((f) => f.stationuuid));
-        const fresh = valid.filter((f) => !known.has(f.stationuuid));
+        const fresh = deduped
+          .filter((raw) => !known.has(String(raw.stationuuid)))
+          .map(toFavoriteStation);
         if (fresh.length === 0) return 0;
         set((s) => ({
           favorites: [...fresh.map((f) => ({ ...f, addedAt: new Date() })), ...s.favorites],
