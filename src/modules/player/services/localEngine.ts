@@ -8,8 +8,9 @@ const CROSSFADE_TICK_MS = 100;
 const RESTART_THRESHOLD_SECONDS = 3;
 const ERROR_SKIP_DELAY_MS = 1000;
 
-// Module-scope file registry: filePath → object URL.
+// Module-scope file registries: filePath → object URL.
 const fileMap = new Map<string, string>();
+const coverMap = new Map<string, string>();
 
 export function registerFile(filePath: string, file: File): void {
   if (!fileMap.has(filePath)) {
@@ -21,12 +22,26 @@ export function getFileUrl(filePath: string): string | undefined {
   return fileMap.get(filePath);
 }
 
-/** Revokes object URLs for files no longer present in any queue. */
+export function registerCover(filePath: string, url: string): void {
+  coverMap.set(filePath, url);
+}
+
+export function getCoverUrl(filePath: string): string | undefined {
+  return coverMap.get(filePath);
+}
+
+/** Revokes audio + cover object URLs for files no longer present in any queue. */
 export function releaseFiles(keep: Set<string>): void {
   for (const [filePath, url] of fileMap) {
     if (!keep.has(filePath)) {
       URL.revokeObjectURL(url);
       fileMap.delete(filePath);
+    }
+  }
+  for (const [filePath, url] of coverMap) {
+    if (!keep.has(filePath)) {
+      URL.revokeObjectURL(url);
+      coverMap.delete(filePath);
     }
   }
 }
