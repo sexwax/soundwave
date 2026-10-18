@@ -58,11 +58,13 @@ export function Recorder() {
 
   const isRecording = status === 'recording';
   const isPaused = status === 'paused';
+  const isProcessing = status === 'processing';
   const isActive = isRecording || isPaused;
+  const isBusy = isActive || isProcessing;
 
   const handleToggle = () => {
     if (isActive) recorderService.stop();
-    else void recorderService.start(source);
+    else if (!isProcessing) void recorderService.start(source);
   };
 
   return (
@@ -73,15 +75,15 @@ export function Recorder() {
           <button
             key={s.id}
             onClick={() => setSource(s.id)}
-            disabled={isActive}
+            disabled={isBusy}
             style={{
               padding: '8px 20px', borderRadius: 8, border: '2px solid',
               borderColor: source === s.id ? 'var(--accent-primary)' : 'var(--border-default)',
               background: source === s.id ? 'var(--accent-primary)' : 'transparent',
               color: source === s.id ? 'var(--bg-base)' : 'var(--text-secondary)',
-              cursor: isActive ? 'not-allowed' : 'pointer',
+              cursor: isBusy ? 'not-allowed' : 'pointer',
               fontFamily: 'var(--font-mono)', fontSize: 13,
-              opacity: isActive ? 0.6 : 1,
+              opacity: isBusy ? 0.6 : 1,
             }}
           >
             {s.label}
@@ -108,17 +110,19 @@ export function Recorder() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <button
           onClick={handleToggle}
+          disabled={isProcessing}
           aria-label={isActive ? 'Detener grabación' : 'Iniciar grabación'}
           style={{
             width: 60, height: 60, borderRadius: '50%',
             background: isRecording ? 'var(--accent-danger)' : 'var(--accent-primary)',
-            border: 'none', cursor: 'pointer', fontSize: 24,
+            border: 'none', cursor: isProcessing ? 'not-allowed' : 'pointer', fontSize: 24,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: isRecording ? '0 0 20px rgba(239,68,68,0.5)' : 'none',
+            opacity: isProcessing ? 0.6 : 1,
           }}
           className={isRecording ? 'pulse-rec' : ''}
         >
-          {isActive ? '⏹' : '⏺'}
+          {isActive ? '⏹' : isProcessing ? '…' : '⏺'}
         </button>
 
         {isActive && (

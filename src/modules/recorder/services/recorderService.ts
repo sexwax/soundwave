@@ -103,13 +103,29 @@ async function captureDisplayStream(source: 'tab' | 'window'): Promise<MediaStre
     return null;
   }
   displayStream.getVideoTracks().forEach((t) => t.stop());
+
+  // The user can stop sharing from the browser's own UI at any point — treat
+  // that exactly like pressing Stop, instead of leaving a dead recording.
+  audioTracks[0].addEventListener('ended', () => {
+    if (mediaRecorder) {
+      stop();
+      notify('Se dejó de compartir: grabación guardada', 'info');
+    }
+  });
+
   return new MediaStream(audioTracks);
 }
 
 export async function start(source: RecorderSource): Promise<void> {
+  if (mediaRecorder || useRecorderStore.getState().status !== 'idle') return;
+  useRecorderStore.getState().setStatus('processing');
+
   try {
     const mediaStream = source === 'app' ? await captureAppStream() : await captureDisplayStream(source);
-    if (!mediaStream) return;
+    if (!mediaStream) {
+      useRecorderStore.getState().setStatus('idle');
+      return;
+    }
 
     stream = mediaStream;
     const mimeType = getSupportedMimeType();
@@ -124,6 +140,7 @@ export async function start(source: RecorderSource): Promise<void> {
     useRecorderStore.getState().setStatus('recording');
     startTimer();
   } catch (err) {
+    useRecorderStore.getState().setStatus('idle');
     if ((err as Error).name !== 'AbortError') {
       notify(`Error al iniciar grabación: ${(err as Error).message}`, 'error');
     }

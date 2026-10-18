@@ -17,6 +17,7 @@ export function getSupportedMimeType(): string {
     'audio/ogg;codecs=opus',
     'audio/webm',
     'audio/ogg',
+    'audio/mp4',
   ];
   for (const t of types) {
     if (MediaRecorder.isTypeSupported(t)) return t;
@@ -27,6 +28,7 @@ export function getSupportedMimeType(): string {
 export function getFileExtFromMime(mime: string): string {
   if (mime.includes('ogg')) return 'ogg';
   if (mime.includes('webm')) return 'webm';
+  if (mime.includes('mp4')) return 'm4a';
   return 'webm';
 }
 
