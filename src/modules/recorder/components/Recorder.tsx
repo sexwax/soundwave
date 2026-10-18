@@ -1,10 +1,9 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useRecorderStore } from '../store/recorderStore';
-import { useAudioContext } from '../../../app/providers/useAudioContext';
+import * as recorderService from '../services/recorderService';
 import { VUMeter } from './VUMeter';
 import { Button } from '../../../shared/components/ui/Button';
-import { getSupportedMimeType, formatFileSize, getFileExtFromMime } from '../../../shared/utils/audioUtils';
-import { formatDate } from '../../../shared/utils/formatters';
+import { notify } from '../../../shared/utils/notify';
 
 function formatElapsed(sec: number) {
   const m = Math.floor(sec / 60).toString().padStart(2, '0');
@@ -18,179 +17,53 @@ const SOURCES = [
   { id: 'window', label: '🖥️ Ventana / App', description: 'Cualquier ventana: Opera, Chrome, Spotify, etc.' },
 ] as const;
 
-export function Recorder() {
-  const { status, source, elapsed, level, recordings, setStatus, setSource, setElapsed, setLevel, addRecording, removeRecording } = useRecorderStore();
-  const { audioContext: appAudioContext, analyserNode: appAnalyserNode } = useAudioContext();
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval>>(undefined);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const levelAudioCtxRef = useRef<AudioContext | null>(null);
-  const rafRef = useRef<number>(undefined);
-  const streamRef = useRef<MediaStream | null>(null);
-  const streamDestRef = useRef<MediaStreamAudioDestinationNode | null>(null);
+interface SavedRecording {
+  name: string;
+  blob: Blob;
+}
 
-  const startLevelMeter = useCallback((stream: MediaStream) => {
-    const ctx = new AudioContext();
-    levelAudioCtxRef.current = ctx;
-    const src = ctx.createMediaStreamSource(stream);
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 256;
-    src.connect(analyser);
-    analyserRef.current = analyser;
-
-    const data = new Uint8Array(analyser.fftSize);
-    const tick = () => {
-      analyser.getByteTimeDomainData(data);
-      let sumSq = 0;
-      for (const v of data) {
-        const n = (v / 128) - 1;
-        sumSq += n * n;
-      }
-      setLevel(Math.min(1, Math.sqrt(sumSq / data.length) * 5));
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    tick();
-  }, [setLevel]);
-
-  const stopLevelMeter = useCallback(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    levelAudioCtxRef.current?.close();
-    levelAudioCtxRef.current = null;
-    setLevel(0);
-  }, [setLevel]);
-
-  const startRecording = useCallback(async () => {
+async function saveRecording(rec: SavedRecording): Promise<void> {
+  if ('showSaveFilePicker' in window) {
     try {
-      let stream: MediaStream;
-
-      if (source === 'app') {
-        if (!appAudioContext || !appAnalyserNode) {
-          alert('El contexto de audio de la app no está listo. Reproduce algo primero.');
-          return;
-        }
-        const dest = appAudioContext.createMediaStreamDestination();
-        appAnalyserNode.connect(dest);
-        streamDestRef.current = dest;
-        stream = dest.stream;
-      } else {
-        // Seleccionar tipo de superficie según el modo
-        const displaySurface = source === 'tab' ? 'browser' : 'window';
-
-        const displayStream = await navigator.mediaDevices.getDisplayMedia({
-          video: { displaySurface } as any,
-          audio: { echoCancellation: false, noiseSuppression: false, sampleRate: 44100 } as any,
-        });
-
-        const audioTracks = displayStream.getAudioTracks();
-        if (audioTracks.length === 0) {
-          const hint = source === 'tab'
-            ? 'Selecciona una pestaña y activa "Compartir audio de la pestaña".'
-            : 'Selecciona una ventana. Si no tiene audio, usa el modo "Pestaña" o activa "Compartir audio del sistema".';
-          alert(`No se detectó audio. ${hint}`);
-          displayStream.getTracks().forEach(t => t.stop());
-          return;
-        }
-        displayStream.getVideoTracks().forEach(t => t.stop());
-        stream = new MediaStream(audioTracks);
-      }
-
-      streamRef.current = stream;
-      const mimeType = getSupportedMimeType();
-      const mr = new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 192000 });
-      chunksRef.current = [];
-
-      mr.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-      mr.start(100);
-      mediaRecorderRef.current = mr;
-
-      startLevelMeter(stream);
-      setStatus('recording');
-      setElapsed(0);
-      timerRef.current = setInterval(() => setElapsed(useRecorderStore.getState().elapsed + 1), 1000);
-    } catch (e) {
-      if ((e as Error).name !== 'AbortError') {
-        alert(`Error al iniciar grabación: ${(e as Error).message}`);
-      }
-    }
-  }, [source, startLevelMeter, setStatus, setElapsed]);
-
-  const stopRecording = useCallback(() => {
-    const mr = mediaRecorderRef.current;
-    if (!mr) return;
-
-    mr.onstop = () => {
-      const mimeType = getSupportedMimeType();
-      const ext = getFileExtFromMime(mimeType);
-      const blob = new Blob(chunksRef.current, { type: mimeType });
-      const elapsed = useRecorderStore.getState().elapsed;
-      addRecording({
-        id: Math.random().toString(36).slice(2),
-        name: `grabacion-${formatDate(new Date())}.${ext}`,
-        blob,
-        duration: elapsed,
-        size: blob.size,
-        createdAt: new Date(),
-        format: ext,
-      });
-      chunksRef.current = [];
-    };
-
-    mr.stop();
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    if (streamDestRef.current && appAnalyserNode) {
-      appAnalyserNode.disconnect(streamDestRef.current);
-      streamDestRef.current = null;
-    }
-    clearInterval(timerRef.current);
-    stopLevelMeter();
-    setStatus('idle');
-  }, [addRecording, stopLevelMeter, setStatus]);
-
-  const pauseResume = useCallback(() => {
-    const mr = mediaRecorderRef.current;
-    if (!mr) return;
-    if (status === 'recording') {
-      mr.pause();
-      clearInterval(timerRef.current);
-      setStatus('paused');
-    } else {
-      mr.resume();
-      timerRef.current = setInterval(() => setElapsed(useRecorderStore.getState().elapsed + 1), 1000);
-      setStatus('recording');
-    }
-  }, [status, setStatus, setElapsed]);
-
-  const saveRecording = useCallback(async (rec: { name: string; blob: Blob }) => {
-    if ('showSaveFilePicker' in window) {
       const ext = rec.name.split('.').pop() ?? 'webm';
-      const handle = await (window as any).showSaveFilePicker({
+      const handle = await window.showSaveFilePicker({
         suggestedName: rec.name,
         types: [{ description: 'Audio', accept: { [`audio/${ext}`]: [`.${ext}`] } }],
       });
       const writable = await handle.createWritable();
       await writable.write(rec.blob);
       await writable.close();
-    } else {
-      const url = URL.createObjectURL(rec.blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = rec.name;
-      a.click();
-      URL.revokeObjectURL(url);
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        notify(`No se pudo guardar la grabación: ${(err as Error).message}`, 'error');
+      }
     }
-  }, []);
+  } else {
+    const url = URL.createObjectURL(rec.blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = rec.name;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+}
 
-  useEffect(() => () => {
-    clearInterval(timerRef.current);
-    stopLevelMeter();
-  }, [stopLevelMeter]);
+export function Recorder() {
+  const { status, source, elapsed, level, recordings, setSource, removeRecording } = useRecorderStore(
+    useShallow((s) => ({
+      status: s.status, source: s.source, elapsed: s.elapsed, level: s.level,
+      recordings: s.recordings, setSource: s.setSource, removeRecording: s.removeRecording,
+    })),
+  );
 
   const isRecording = status === 'recording';
   const isPaused = status === 'paused';
   const isActive = isRecording || isPaused;
 
-  const activeSource = SOURCES.find(s => s.id === source)!;
+  const handleToggle = () => {
+    if (isActive) recorderService.stop();
+    else void recorderService.start(source);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -234,7 +107,7 @@ export function Recorder() {
       {/* Recording control */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <button
-          onClick={isActive ? stopRecording : startRecording}
+          onClick={handleToggle}
           aria-label={isActive ? 'Detener grabación' : 'Iniciar grabación'}
           style={{
             width: 60, height: 60, borderRadius: '50%',
@@ -250,7 +123,7 @@ export function Recorder() {
 
         {isActive && (
           <button
-            onClick={pauseResume}
+            onClick={recorderService.pauseResume}
             style={{ background: 'none', border: '1px solid var(--border-default)', borderRadius: 8, color: 'var(--text-primary)', cursor: 'pointer', fontSize: 18, padding: '6px 12px' }}
           >
             {isPaused ? '▶' : '⏸'}
@@ -306,3 +179,4 @@ export function Recorder() {
     </div>
   );
 }
+
