@@ -36,6 +36,8 @@ export interface PlayHistory {
 export interface LocalTrack {
   id?: number;
   filePath: string;
+  /** Path relative to the opened directory, used to sort the queue by folder structure. */
+  relativePath?: string;
   title: string;
   artist: string;
   album: string;
@@ -47,11 +49,17 @@ export interface LocalTrack {
   addedAt: Date;
 }
 
+export interface DirHandleEntry {
+  key: string;
+  handle: FileSystemDirectoryHandle;
+}
+
 class SoundWaveDB extends Dexie {
   favorites!: Table<FavoriteStation>;
   collections!: Table<Collection>;
   history!: Table<PlayHistory>;
   tracks!: Table<LocalTrack>;
+  handles!: Table<DirHandleEntry>;
 
   constructor() {
     super('SoundWaveDB');
@@ -60,6 +68,9 @@ class SoundWaveDB extends Dexie {
       collections: '++id, name',
       history: '++id, playedAt, type',
       tracks: '++id, &filePath, artist, album, addedAt',
+    });
+    this.version(2).stores({
+      handles: 'key',
     });
   }
 }

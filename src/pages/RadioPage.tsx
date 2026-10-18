@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { PageTransition } from '../shared/components/layout/PageTransition';
 import { Visualizer } from '../shared/components/audio/Visualizer';
+import { VisModeToggle, type VisMode } from '../shared/components/audio/VisModeToggle';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { RadioSearch } from '../modules/radio/components/RadioSearch';
 import { StationCard } from '../modules/radio/components/StationCard';
@@ -43,7 +44,7 @@ export default function RadioPage() {
   const { loadTopStations, search } = useRadioBrowser();
   const [selectedStation, setSelectedStation] = useState<RadioStation | null>(null);
   const [showShare, setShowShare] = useState(false);
-  const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
+  const [visMode, setVisMode] = useState<VisMode>('bars');
   const q = searchParams.get('q');
 
   // React to `?q=` changes even while already on /radio (not just on mount).
@@ -160,50 +161,7 @@ export default function RadioPage() {
           </div>
 
           {/* Vis mode selector */}
-          <div style={{ display: 'flex', gap: 2 }}>
-            <button
-              onClick={() => setVisMode('bars')}
-              style={{
-                background: visMode === 'bars' ? 'var(--accent-primary)' : 'var(--bg-base)',
-                border: '1px solid var(--border-subtle)',
-                color: visMode === 'bars' ? 'var(--bg-base)' : 'var(--text-secondary)',
-                borderRadius: 4,
-                padding: '2px 6px',
-                cursor: 'pointer',
-                fontSize: 10,
-              }}
-            >
-              ▌▌▌
-            </button>
-            <button
-              onClick={() => setVisMode('wave')}
-              style={{
-                background: visMode === 'wave' ? 'var(--accent-primary)' : 'var(--bg-base)',
-                border: '1px solid var(--border-subtle)',
-                color: visMode === 'wave' ? 'var(--bg-base)' : 'var(--text-secondary)',
-                borderRadius: 4,
-                padding: '2px 6px',
-                cursor: 'pointer',
-                fontSize: 10,
-              }}
-            >
-              〜〜
-            </button>
-            <button
-              onClick={() => setVisMode('circular')}
-              style={{
-                background: visMode === 'circular' ? 'var(--accent-primary)' : 'var(--bg-base)',
-                border: '1px solid var(--border-subtle)',
-                color: visMode === 'circular' ? 'var(--bg-base)' : 'var(--text-secondary)',
-                borderRadius: 4,
-                padding: '2px 6px',
-                cursor: 'pointer',
-                fontSize: 10,
-              }}
-            >
-              ◎
-            </button>
-          </div>
+          <VisModeToggle mode={visMode} onChange={setVisMode} />
 
           <button
             onClick={() => setShowShare(true)}

@@ -1,43 +1,43 @@
 import { useLocalFiles } from '../hooks/useLocalFiles';
-import { usePlayerStore } from '../store/playerStore';
+import { usePlayerStore, type RepeatMode } from '../store/playerStore';
 import { useShallow } from 'zustand/react/shallow';
 import * as localEngine from '../services/localEngine';
 import { TrackList } from './TrackList';
 import { Equalizer } from './Equalizer';
-import { FileTree } from './FileTree';
 import { Button } from '../../../shared/components/ui/Button';
 import { Slider } from '../../../shared/components/ui/Slider';
+import { Input } from '../../../shared/components/ui/Input';
 import { Visualizer } from '../../../shared/components/audio/Visualizer';
+import { VisModeToggle, type VisMode } from '../../../shared/components/audio/VisModeToggle';
 import { useState } from 'react';
 import { formatTime } from '../../../shared/utils/formatters';
-import type { LocalTrack } from '../../favorites/db/favoritesDb';
+
+const REPEAT_ICON: Record<RepeatMode, string> = { none: '🔁', queue: '🔁', track: '🔂' };
+const REPEAT_LABEL: Record<RepeatMode, string> = { none: 'Repetir: desactivado', queue: 'Repetir: cola', track: 'Repetir: pista' };
 
 export function LocalPlayer() {
-  const { openDirectory, openFiles, isIndexing } = useLocalFiles();
+  const { openDirectory, openFiles, appendFiles, reopenLastDirectory, isIndexing, indexProgress, hasSavedDirHandle } = useLocalFiles();
   const {
     queue, isShuffled, toggleShuffle, crossfadeDuration, setCrossfade,
-    setCurrentIndex, setIsPlaying,
     currentTime, duration,
     volume, setVolume, isMuted, toggleMute,
-    currentTrack, isPlaying,
+    currentTrack, isPlaying, repeatMode, cycleRepeatMode, clearQueue,
   } = usePlayerStore(useShallow((s) => ({
     queue: s.queue, isShuffled: s.isShuffled, toggleShuffle: s.toggleShuffle,
     crossfadeDuration: s.crossfadeDuration, setCrossfade: s.setCrossfade,
-    setCurrentIndex: s.setCurrentIndex, setIsPlaying: s.setIsPlaying,
     currentTime: s.currentTime, duration: s.duration,
     volume: s.volume, setVolume: s.setVolume, isMuted: s.isMuted, toggleMute: s.toggleMute,
     currentTrack: s.currentTrack, isPlaying: s.isPlaying,
+    repeatMode: s.repeatMode, cycleRepeatMode: s.cycleRepeatMode, clearQueue: s.clearQueue,
   })));
   const track = currentTrack();
   const [showEq, setShowEq] = useState(false);
-  const [visMode, setVisMode] = useState<'bars' | 'wave' | 'circular'>('bars');
+  const [visMode, setVisMode] = useState<VisMode>('bars');
+  const [filterText, setFilterText] = useState('');
 
-  const handleSelectTrack = (selectedTrack: LocalTrack) => {
-    const index = queue.findIndex(t => t.filePath === selectedTrack.filePath);
-    if (index >= 0) {
-      setCurrentIndex(index);
-      setIsPlaying(true);
-    }
+  const handleClearQueue = () => {
+    clearQueue();
+    localEngine.releaseFiles(new Set());
   };
 
   return (
@@ -45,10 +45,26 @@ export function LocalPlayer() {
       {/* Toolbar */}
       <div className="player-toolbar" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <Button onClick={openDirectory} disabled={isIndexing} className="toolbar-btn">
-          📁 {isIndexing ? 'Indexando...' : 'Abrir carpeta'}
+          📁 {isIndexing && indexProgress ? `Indexando ${indexProgress.done}/${indexProgress.total}` : 'Abrir carpeta'}
         </Button>
-        <Button onClick={openFiles} variant="outline" className="toolbar-btn">
+        {hasSavedDirHandle && (
+          <Button onClick={reopenLastDirectory} disabled={isIndexing} variant="outline" className="toolbar-btn">
+            🕐 Reabrir última carpeta
+          </Button>
+        )}
+        <Button onClick={openFiles} disabled={isIndexing} variant="outline" className="toolbar-btn">
           🎵 Abrir archivos
+        </Button>
+        <Button onClick={appendFiles} disabled={isIndexing} variant="outline" className="toolbar-btn">
+          ➕ Añadir archivos
+        </Button>
+        <Button
+          onClick={handleClearQueue}
+          disabled={queue.length === 0}
+          variant="outline"
+          className="toolbar-btn"
+        >
+          🗑️ Vaciar cola
         </Button>
         <Button
           onClick={toggleShuffle}
@@ -58,6 +74,16 @@ export function LocalPlayer() {
           className="toolbar-btn"
         >
           🔀 Aleatorio
+        </Button>
+        <Button
+          onClick={cycleRepeatMode}
+          variant={repeatMode !== 'none' ? 'primary' : 'ghost'}
+          size="sm"
+          aria-label={REPEAT_LABEL[repeatMode]}
+          title={REPEAT_LABEL[repeatMode]}
+          className="toolbar-btn"
+        >
+          {REPEAT_ICON[repeatMode]}
         </Button>
         <Button
           onClick={() => setShowEq(!showEq)}
@@ -210,7 +236,7 @@ export function LocalPlayer() {
                 ⏮
               </Button>
               <Button
-                onClick={() => setIsPlaying(!isPlaying)}
+                onClick={() => usePlayerStore.getState().setIsPlaying(!isPlaying)}
                 variant="primary"
                 size="sm"
                 aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
@@ -239,32 +265,7 @@ export function LocalPlayer() {
             gap: 8,
           }}>
             <Visualizer width={200} height={80} mode={visMode} />
-            <div style={{ display: 'flex', gap: 4 }}>
-              <Button
-                onClick={() => setVisMode('bars')}
-                variant={visMode === 'bars' ? 'primary' : 'ghost'}
-                size="sm"
-                style={{ fontSize: 10, padding: '2px 6px' }}
-              >
-                ▌▌▌
-              </Button>
-              <Button
-                onClick={() => setVisMode('wave')}
-                variant={visMode === 'wave' ? 'primary' : 'ghost'}
-                size="sm"
-                style={{ fontSize: 10, padding: '2px 6px' }}
-              >
-                〜〜
-              </Button>
-              <Button
-                onClick={() => setVisMode('circular')}
-                variant={visMode === 'circular' ? 'primary' : 'ghost'}
-                size="sm"
-                style={{ fontSize: 10, padding: '2px 6px' }}
-              >
-                ◎
-              </Button>
-            </div>
+            <VisModeToggle mode={visMode} onChange={setVisMode} />
           </div>
         </div>
       )}
@@ -302,6 +303,7 @@ export function LocalPlayer() {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
+              gap: 12,
               padding: '8px 0',
               borderBottom: '1px solid var(--border-color)',
               marginBottom: 8,
@@ -311,12 +313,20 @@ export function LocalPlayer() {
                 fontSize: 13,
                 fontWeight: 600,
                 color: 'var(--text-primary)',
+                whiteSpace: 'nowrap',
               }}>
                 🎼 Lista de reproducción ({queue.length} pistas)
               </span>
+              <Input
+                placeholder="Filtrar pistas…"
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                style={{ maxWidth: 220 }}
+                aria-label="Filtrar pistas"
+              />
             </div>
             <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-              <TrackList />
+              <TrackList filter={filterText} />
             </div>
           </>
         )}

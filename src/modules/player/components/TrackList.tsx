@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { usePlayerStore } from '../store/playerStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -7,6 +7,20 @@ import type { LocalTrack } from '../../favorites/db/favoritesDb';
 
 const VIRTUAL_THRESHOLD = 100;
 const ROW_HEIGHT = 52;
+
+interface FilteredRow {
+  track: LocalTrack;
+  /** Index into the active list (queue or shuffledQueue) — what playIndex expects. */
+  index: number;
+}
+
+function matchesFilter(track: LocalTrack, query: string): boolean {
+  return (
+    track.title.toLowerCase().includes(query) ||
+    track.artist.toLowerCase().includes(query) ||
+    track.album.toLowerCase().includes(query)
+  );
+}
 
 function TrackRow({
   track,
@@ -60,24 +74,28 @@ function TrackRow({
   );
 }
 
-export function TrackList() {
-  const { queue, shuffledQueue, isShuffled, currentIndex, isPlaying, setCurrentIndex, setIsPlaying } = usePlayerStore(
+interface TrackListProps {
+  filter?: string;
+}
+
+export function TrackList({ filter = '' }: TrackListProps) {
+  const { queue, shuffledQueue, isShuffled, currentIndex, isPlaying, playIndex } = usePlayerStore(
     useShallow((s) => ({
       queue: s.queue, shuffledQueue: s.shuffledQueue, isShuffled: s.isShuffled,
-      currentIndex: s.currentIndex, isPlaying: s.isPlaying,
-      setCurrentIndex: s.setCurrentIndex, setIsPlaying: s.setIsPlaying,
+      currentIndex: s.currentIndex, isPlaying: s.isPlaying, playIndex: s.playIndex,
     })),
   );
   const parentRef = useRef<HTMLDivElement>(null);
 
   // When shuffle is active, display shuffledQueue so the visual order matches
-  // what useAudioEngine will play (it reads shuffledQueue[currentIndex]).
+  // what localEngine will play (it reads shuffledQueue[currentIndex]).
   const displayQueue = isShuffled && shuffledQueue.length === queue.length ? shuffledQueue : queue;
 
-  const playTrack = (index: number) => {
-    setCurrentIndex(index);
-    setIsPlaying(true);
-  };
+  const rows = useMemo<FilteredRow[]>(() => {
+    const query = filter.trim().toLowerCase();
+    const withIndex = displayQueue.map((track, index) => ({ track, index }));
+    return query ? withIndex.filter((row) => matchesFilter(row.track, query)) : withIndex;
+  }, [displayQueue, filter]);
 
   // Auto-scroll to current track when it changes
   useEffect(() => {
@@ -99,25 +117,25 @@ export function TrackList() {
   }, [currentIndex]);
 
   const virtualizer = useVirtualizer({
-    count: queue.length,
+    count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_HEIGHT,
-    enabled: queue.length > VIRTUAL_THRESHOLD,
+    enabled: rows.length > VIRTUAL_THRESHOLD,
   });
 
-  if (displayQueue.length <= VIRTUAL_THRESHOLD) {
+  if (rows.length <= VIRTUAL_THRESHOLD) {
     // Non-virtual: TrackList owns scroll so LocalPlayer can always use overflow:hidden
     return (
       <div ref={parentRef} style={{ height: '100%', overflowY: 'auto' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {displayQueue.map((track, i) => (
+          {rows.map((row) => (
             <TrackRow
-              key={track.filePath}
-              track={track}
-              index={i}
-              isActive={i === currentIndex}
+              key={row.track.filePath}
+              track={row.track}
+              index={row.index}
+              isActive={row.index === currentIndex}
               isPlaying={isPlaying}
-              onClick={() => playTrack(i)}
+              onClick={() => playIndex(row.index)}
             />
           ))}
         </div>
@@ -128,20 +146,23 @@ export function TrackList() {
   return (
     <div ref={parentRef} style={{ height: '100%', overflowY: 'auto' }}>
       <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-        {virtualizer.getVirtualItems().map((vi) => (
-          <div
-            key={displayQueue[vi.index].filePath}
-            style={{ position: 'absolute', top: vi.start, left: 0, right: 0, height: vi.size }}
-          >
-            <TrackRow
-              track={displayQueue[vi.index]}
-              index={vi.index}
-              isActive={vi.index === currentIndex}
-              isPlaying={isPlaying}
-              onClick={() => playTrack(vi.index)}
-            />
-          </div>
-        ))}
+        {virtualizer.getVirtualItems().map((vi) => {
+          const row = rows[vi.index];
+          return (
+            <div
+              key={row.track.filePath}
+              style={{ position: 'absolute', top: vi.start, left: 0, right: 0, height: vi.size }}
+            >
+              <TrackRow
+                track={row.track}
+                index={row.index}
+                isActive={row.index === currentIndex}
+                isPlaying={isPlaying}
+                onClick={() => playIndex(row.index)}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

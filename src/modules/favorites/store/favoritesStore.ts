@@ -14,6 +14,8 @@ interface FavoritesState {
   addCollection: (name: string, color: string) => Promise<void>;
   removeCollection: (id: number) => Promise<void>;
   addHistory: (entry: Omit<PlayHistory, 'id' | 'playedAt'>) => Promise<void>;
+  saveDirHandle: (key: string, handle: FileSystemDirectoryHandle) => Promise<void>;
+  getDirHandle: (key: string) => Promise<FileSystemDirectoryHandle | undefined>;
 }
 
 export const useFavoritesStore = create<FavoritesState>()(
@@ -72,6 +74,23 @@ export const useFavoritesStore = create<FavoritesState>()(
           set({ history });
         } catch {
           // Ignorar errores de historial
+        }
+      },
+
+      saveDirHandle: async (key, handle) => {
+        try {
+          await db.handles.put({ key, handle });
+        } catch {
+          // IndexedDB no disponible — "Reabrir última carpeta" simplemente no aparecerá
+        }
+      },
+
+      getDirHandle: async (key) => {
+        try {
+          const entry = await db.handles.get(key);
+          return entry?.handle;
+        } catch {
+          return undefined;
         }
       },
     }),
