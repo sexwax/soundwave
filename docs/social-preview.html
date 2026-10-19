@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>SoundWave social preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 1280px;
+    height: 640px;
+    overflow: hidden;
+    background: #080b12;
+    font-family: 'DM Mono', ui-monospace, monospace;
+  }
+
+  .card {
+    position: relative;
+    width: 1280px;
+    height: 640px;
+    isolation: isolate;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(0, 229, 255, 0.14), transparent 45%),
+      radial-gradient(circle at 85% 85%, rgba(124, 58, 237, 0.16), transparent 45%),
+      #080b12;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .accent-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 100%;
+    background: linear-gradient(180deg, #00e5ff, #7c3aed);
+  }
+
+  .left {
+    position: relative;
+    z-index: 2;
+    width: 560px;
+    padding: 0 0 0 72px;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .logo-mark {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: #00e5ff;
+    box-shadow: 0 0 24px 4px rgba(0, 229, 255, 0.55);
+  }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 42px;
+    color: #e2eaf5;
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+  }
+
+  .tagline {
+    font-size: 20px;
+    color: #6b7fa3;
+    line-height: 1.5;
+    margin-bottom: 30px;
+    max-width: 440px;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .chip {
+    font-size: 14px;
+    color: #e2eaf5;
+    background: #161d2e;
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    border-radius: 999px;
+    padding: 8px 16px;
+  }
+
+  .right {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    width: 680px;
+    height: 640px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .shot-frame {
+    width: 620px;
+    height: 460px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(226, 234, 245, 0.12);
+    box-shadow: -40px 0 80px -20px rgba(0, 0, 0, 0.6), 0 20px 60px rgba(0, 0, 0, 0.5);
+    transform: rotate(2deg);
+  }
+
+  .shot-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top left;
+    display: block;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="accent-bar"></div>
+    <div class="left">
+      <div class="logo-row">
+        <span class="logo-mark"></span>
+        <span class="logo-text">SoundWave</span>
+      </div>
+      <p class="tagline">Open-source web radio &amp; music player</p>
+      <div class="chips">
+        <span class="chip">Internet radio</span>
+        <span class="chip">10-band EQ</span>
+        <span class="chip">Recorder</span>
+        <span class="chip">PWA</span>
+      </div>
+    </div>
+    <div class="right">
+      <div class="shot-frame">
+        <img src="screenshots/radio.png" alt="" />
+      </div>
+    </div>
+  </div>
+</body>
+</html>

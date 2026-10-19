@@ -17,7 +17,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "screenshots": "node scripts/screenshots.mjs"
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.13.23",

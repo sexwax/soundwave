@@ -1,136 +1,149 @@
-# Soundwave
+# SoundWave
 
-Reproductor de música y radio por internet moderno y minimalista.
+🇪🇸 **[Leer en español → README.es.md](README.es.md)**
 
-**🎧 Demo en producción: [soundwave-woad.vercel.app](https://soundwave-woad.vercel.app)**
+A modern, minimalist local music player and internet radio app.
 
-![Soundwave](https://img.shields.io/badge/React-19-black?logo=react&style=flat)
+**🎧 Live demo: [soundwave-woad.vercel.app](https://soundwave-woad.vercel.app)**
+
+![SoundWave](https://img.shields.io/badge/React-19-black?logo=react&style=flat)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&style=flat)
 ![Vite](https://img.shields.io/badge/Vite-8-purple?logo=vite&style=flat)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat)
 
-## Características
+![Radio page](docs/screenshots/radio.png)
 
-- **Reproductor de archivos locales**: Reproduce tu biblioteca de música con metadatos ID3, aleatorio y repetición (cola o pista) reales, crossfade, filtro de pistas y "Reabrir última carpeta"
-- **Radio por internet**: Busca y escucha estaciones de todo el mundo vía [radio-browser.info](https://www.radio-browser.info/), con soporte HLS y reconexión automática
-- **Ecualizador global de 10 bandas**: Un panel accesible desde cualquier página (MiniPlayer, reproductor local o radio), con presets y bypass
-- **Sistema de favoritos**: Guarda y exporta/importa tus estaciones favoritas, con historial de reproducción local y de radio (persistencia IndexedDB)
-- **Grabadora de audio**: Graba "Esta app", una pestaña o una ventana, con visualización VU en tiempo real — sobrevive a navegar a otra página mientras grabas
-- **Visualizador de audio**: Espectro de audio en tiempo real con Web Audio API
-- **Atajos de teclado**: reproducir/pausar, pistas, volumen, mute, ecualizador — pulsa `?` para ver la lista completa
-- **3 temas visuales**: Dark (default), Light y Neon
-- **PWA instalable**: iconos reales (incluido uno `maskable`), funciona offline con service worker y caché inteligente
-- **Diseño responsive**: Funciona en desktop, tablet y móvil
+## Features
 
-## Stack Tecnológico
+- **Local file player**: Play your music library with ID3 metadata, real shuffle and repeat (queue or track), crossfade, track filtering, and "Reopen last folder"
+- **Internet radio**: Search and listen to stations worldwide via [radio-browser.info](https://www.radio-browser.info/), with HLS support and automatic reconnection
+- **Global 10-band equalizer**: One panel accessible from any page (MiniPlayer, local player, or radio), with presets and bypass
+- **Favorites system**: Save and export/import your favorite stations, with local and radio playback history (IndexedDB persistence)
+- **Audio recorder**: Record "This tab", a browser tab, or a window, with real-time VU visualization — survives navigating to another page mid-recording
+- **Audio visualizer**: Real-time audio spectrum with the Web Audio API
+- **Keyboard shortcuts**: play/pause, tracks, volume, mute, equalizer — press `?` to see the full list
+- **3 visual themes**: Dark (default), Light, and Neon
+- **Installable PWA**: real icons (including a `maskable` one), works offline with a service worker and smart caching
+- **Responsive design**: works on desktop, tablet, and mobile
 
-| Categoría | Tecnologías |
+## Screenshots
+
+| | |
+|---|---|
+| **Equalizer** ![Equalizer](docs/screenshots/equalizer.png) | **Local player** ![Local player](docs/screenshots/player.png) |
+| **Dark theme** ![Dark theme](docs/screenshots/radio.png) | **Light theme** ![Light theme](docs/screenshots/theme-light.png) |
+| **Neon theme** ![Neon theme](docs/screenshots/theme-neon.png) | **Mobile view** ![Mobile view](docs/screenshots/mobile.png) |
+
+## Tech Stack
+
+| Category | Technologies |
 |-----------|-------------|
 | Framework | React 19 + TypeScript |
 | Build | Vite 8 |
-| Estilos | TailwindCSS 4 + CSS Variables |
-| Estado | Zustand |
+| Styling | TailwindCSS 4 + CSS Variables |
+| State | Zustand |
 | Router | React Router DOM 7 |
-| Audio | `<audio>` nativo + hls.js + Web Audio API |
+| Audio | native `<audio>` + hls.js + Web Audio API |
 | DB | Dexie.js (IndexedDB) |
-| Animaciones | Framer Motion |
+| Animation | Framer Motion |
 | Tests | Vitest + Playwright |
 
 ## Quick Start
 
 ```bash
-# Clonar el repositorio
+# Clone the repository
 git clone https://github.com/sexwax/soundwave.git
 cd soundwave
 
-# Instalar dependencias
+# Install dependencies
 npm install
 
-# Iniciar servidor de desarrollo
+# Start the dev server
 npm run dev
 ```
 
-La app estará disponible en `http://localhost:5173`
+The app will be available at `http://localhost:5173`
 
-## Desplegar en Vercel
+## Deploying to Vercel
 
-### Opción 1: Deploy automático (recomendado)
+### Option 1: Automatic deploy (recommended)
 
-1. Ve a [vercel.com/new](https://vercel.com/new)
-2. Importa tu repositorio `sexwax/soundwave`
-3. Vercel detectará automáticamente que es un proyecto Vite
-4. Haz clic en **Deploy**
+1. Go to [vercel.com/new](https://vercel.com/new)
+2. Import the `sexwax/soundwave` repository
+3. Vercel will auto-detect it as a Vite project
+4. Click **Deploy**
 
-### Opción 2: Deploy con CLI
+### Option 2: Deploy with the CLI
 
 ```bash
-# Instalar Vercel CLI
+# Install the Vercel CLI
 npm i -g vercel
 
-# Iniciar sesión
+# Log in
 vercel login
 
-# Desplegar
+# Deploy
 vercel
 ```
 
-### Configuración automática
+### Automatic configuration
 
-El archivo `vercel.json` ya está configurado con:
+`vercel.json` is already set up with:
 
 - Framework: Vite
 - Build: `npm run build`
 - Output: `dist/`
 - Preview: `npm run preview`
 
-### Variables de Entorno en Vercel
+### Environment Variables on Vercel
 
-Si usas las variables opcionales, configúralas en Vercel:
+If you use the optional variables, configure them in Vercel:
 
-1. Ve a tu proyecto en Vercel
+1. Go to your project in Vercel
 2. **Settings** → **Environment Variables**
-3. Agrega:
+3. Add:
    - `VITE_CORS_PROXY_URL`
    - `VITE_APP_URL`
-4. Vuelve a desplegar para aplicar los cambios
+4. Redeploy to apply the changes
 
-## Comandos Disponibles
-
-```bash
-npm run dev          # Servidor de desarrollo con HMR
-npm run build        # Compilar para producción
-npm run preview      # Previsualizar build localmente
-npm run lint         # Ejecutar ESLint
-npm test             # Tests unitarios (watch mode)
-npm run test:ui      # Tests con interfaz web
-npm run test:e2e     # Tests E2E con Playwright
-```
-
-## Variables de Entorno
-
-Crea un archivo `.env` basado en `.env.example`:
+## Available Commands
 
 ```bash
-VITE_CORS_PROXY_URL=https://tu-proxy  # Proxy CORS para streams (ver sección "Proxy CORS")
-VITE_APP_URL=https://tu-dominio.app   # URL base para share links
+npm run dev          # Dev server with HMR
+npm run build        # Build for production
+npm run preview      # Preview the production build locally
+npm run lint         # Run ESLint
+npm test             # Unit tests (watch mode)
+npm run test:ui      # Tests with a web UI
+npm run test:e2e     # E2E tests with Playwright
+npm run screenshots  # Regenerates docs/screenshots/*.png with Playwright (needs `npm i -D sharp` first — see CLAUDE.md)
 ```
 
-Todas son opcionales — la app funciona sin configuración.
+## Environment Variables
 
-## Proxy CORS
+Create a `.env` file based on `.env.example`:
 
-Algunas emisoras de radio no envían cabeceras CORS, así que el navegador bloquea su audio al intentar enrutarlo por el visualizador/ecualizador (y en algunos casos, directamente la reproducción). `proxy/cloudflare-worker.js` es un Worker que reenvía el stream añadiendo `Access-Control-Allow-Origin` (solo a los orígenes que tú permitas), sin cachear nada (es audio en directo). También valida que el destino sea una URL http/https pública (rechaza IPs privadas y localhost) y que la respuesta sea realmente audio/HLS antes de reenviarla.
+```bash
+VITE_CORS_PROXY_URL=https://your-proxy  # CORS proxy for streams (see "CORS Proxy" section)
+VITE_APP_URL=https://your-domain.app    # Base URL for share links
+```
 
-**Configurar `ALLOWED_ORIGINS` antes de desplegar** — es obligatorio; sin un origen en la lista, el Worker devuelve 403 a cualquier petición:
+All of them are optional — the app works without any configuration.
 
-- **Opción A — en `proxy/wrangler.toml`** (queda en el repo del Worker, no en el de SoundWave si lo despliegas por separado): edita el `[vars]` de `proxy/wrangler.toml` con los orígenes reales, separados por comas, por ejemplo `"https://soundwave.iaofspain.com,https://soundwave-woad.vercel.app,http://localhost:5173"`.
-- **Opción B — como secreto** (si prefieres no dejarlo en texto plano en el `.toml`):
+## CORS Proxy
+
+Some radio stations don't send CORS headers, so the browser blocks their audio when the app tries to route it through the visualizer/equalizer (and in some cases, blocks playback entirely). `proxy/cloudflare-worker.js` is a Worker that forwards the stream adding `Access-Control-Allow-Origin` (only for the origins you allow), without caching anything (it's live audio). It also validates that the target is a public http/https URL (rejecting private IPs and localhost) and that the response is actually audio/HLS before forwarding it.
+
+**You must configure `ALLOWED_ORIGINS` before deploying it** — without an origin on the list, the Worker returns 403 to every request:
+
+- **Option A — in `proxy/wrangler.toml`** (stays in the Worker's own repo, not SoundWave's, if you deploy it separately): edit the `[vars]` block of `proxy/wrangler.toml` with the real origins, comma-separated, e.g. `"https://soundwave.iaofspain.com,https://soundwave-woad.vercel.app,http://localhost:5173"`.
+- **Option B — as a secret** (if you'd rather not keep it in plain text in the `.toml`):
   ```bash
   wrangler secret put ALLOWED_ORIGINS
-  # pega la lista separada por comas cuando lo pida
+  # paste the comma-separated list when prompted
   ```
 
-Desplegarlo:
+Deploying it:
 
 ```bash
 npm i -g wrangler
@@ -138,40 +151,40 @@ wrangler login
 wrangler deploy --config proxy/wrangler.toml
 ```
 
-Wrangler imprime la URL del Worker al terminar (algo como `https://soundwave-cors-proxy.tu-cuenta.workers.dev`). Configúrala como `VITE_CORS_PROXY_URL` en tu `.env` (y en las variables de entorno de Vercel si despliegas ahí) y vuelve a construir. Sin esta variable, SoundWave sigue funcionando: simplemente no habrá fallback para las emisoras que bloqueen CORS.
+Wrangler prints the Worker's URL when it finishes (something like `https://soundwave-cors-proxy.your-account.workers.dev`). Set it as `VITE_CORS_PROXY_URL` in your `.env` (and in Vercel's environment variables if you deploy there) and rebuild. Without this variable, SoundWave still works — it simply has no fallback for stations that block CORS.
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 src/
-├── app/                    # Root, Router y Providers
+├── app/                    # Root, Router and Providers
 │   ├── App.tsx
 │   ├── Router.tsx
 │   └── providers/
-│       ├── AudioProvider.tsx       # expone el grafo singleton via contexto, no lo crea
+│       ├── AudioProvider.tsx       # exposes the singleton graph via context, doesn't create it
 │       ├── ThemeProvider.tsx
 │       └── NotificationProvider.tsx
-├── modules/                # Módulos autocontenidos
-│   ├── player/             # Reproducción de archivos locales
-│   │   ├── services/       #   localEngine.ts — el <audio> real, a nivel de módulo
+├── modules/                # Self-contained feature modules
+│   ├── player/             # Local file playback
+│   │   ├── services/       #   localEngine.ts — the actual <audio> element, module-scoped
 │   │   └── store/
-│   ├── radio/              # Radio por internet
+│   ├── radio/              # Internet radio
 │   │   └── services/       #   radioPlayer.ts, radioBrowserApi.ts
-│   ├── favorites/          # Favoritos con IndexedDB
-│   └── recorder/           # Grabadora de audio
-│       └── services/       #   recorderService.ts — el MediaRecorder real, a nivel de módulo
-├── pages/                  # Wrappers de rutas
-├── shared/                 # Componentes y utilidades
+│   ├── favorites/          # Favorites with IndexedDB
+│   └── recorder/           # Audio recorder
+│       └── services/       #   recorderService.ts — the actual MediaRecorder, module-scoped
+├── pages/                  # Thin route wrappers
+├── shared/                 # Shared components and utilities
 │   ├── audio/              #   audioGraph.ts, playbackCoordinator.ts, eqStore.ts
 │   ├── components/
 │   ├── hooks/
 │   └── utils/
 ├── types/                  # Ambient .d.ts (File System Access API)
-└── styles/                 # Estilos globales y temas
+└── styles/                 # Global styles and themes
     └── globals.css
 ```
 
-## Arquitectura de Audio
+## Audio Architecture
 
 ```
 AudioContext (singleton, shared/audio/audioGraph.ts)
@@ -180,46 +193,46 @@ AudioContext (singleton, shared/audio/audioGraph.ts)
             └── analyserNode → destination
 ```
 
-El `analyserNode` alimenta todos los visualizadores y el espectro del ecualizador. `localEngine` (archivos locales) y `radioPlayer` (radio, emisoras con CORS) enrutan sus elementos `<audio>` a `masterGainNode`; un `playbackCoordinator` se asegura de que solo una de las dos fuentes suene a la vez. No se usa Howler.js — ambos motores trabajan directamente sobre `<audio>` nativo, lo que permite enrutar cada stream de forma independiente según soporte CORS.
+The `analyserNode` feeds every visualizer and the equalizer's spectrum. `localEngine` (local files) and `radioPlayer` (radio, CORS-enabled stations) route their `<audio>` elements into `masterGainNode`; a `playbackCoordinator` makes sure only one of the two sources is ever audible at a time. Howler.js is not used — both engines work directly on native `<audio>`, which lets each stream be routed independently based on CORS support.
 
-## Persistencia
+## Persistence
 
-Los favoritos se guardan en IndexedDB vía Dexie:
+Favorites are stored in IndexedDB via Dexie:
 
-- `favorites` — Estaciones y tracks favoritos
-- `collections` — Colecciones de usuario
-- `history` — Historial de reproducción
-- `tracks` — Metadatos de tracks escaneados
-- `handles` — `FileSystemDirectoryHandle` de la última carpeta local abierta (para "Reabrir última carpeta")
+- `favorites` — Favorite stations and tracks
+- `collections` — User collections
+- `history` — Playback history
+- `tracks` — Scanned track metadata
+- `handles` — `FileSystemDirectoryHandle` of the last opened local folder (for "Reopen last folder")
 
-## Atajos de teclado
+## Keyboard Shortcuts
 
-Pulsa `?` dentro de la app para ver esta lista en un modal.
+Press `?` inside the app to see this list in a modal.
 
-| Tecla | Acción |
+| Key | Action |
 |---|---|
-| `Espacio` | Reproducir / pausar la fuente activa (radio o local) |
-| `←` / `→` | Pista anterior / siguiente (solo local) |
-| `Shift` + `←` / `→` | Retroceder / avanzar 10 segundos (solo local) |
-| `↑` / `↓` | Subir / bajar volumen 5% |
-| `M` | Silenciar / activar sonido |
-| `E` | Abrir / cerrar el ecualizador |
-| `?` | Mostrar esta ayuda |
+| `Space` | Play / pause the active source (radio or local) |
+| `←` / `→` | Previous / next track (local only) |
+| `Shift` + `←` / `→` | Seek back / forward 10 seconds (local only) |
+| `↑` / `↓` | Volume up / down 5% |
+| `M` | Mute / unmute |
+| `E` | Open / close the equalizer |
+| `?` | Show this help |
 
-## Compatibilidad de navegadores
+## Browser Compatibility
 
-- **Abrir carpeta** y **"Reabrir última carpeta"** usan la File System Access API — solo disponible en **Chrome y Edge** (basados en Chromium). En **Firefox** y el resto, "Abrir carpeta" cae automáticamente a la selección de carpeta clásica (`<input type="file" webkitdirectory>`); "Reabrir última carpeta" no aparece porque el navegador no puede guardar el permiso.
-- El **grabador** usa el códec que cada navegador soporte vía `MediaRecorder`: Chrome/Edge y Firefox graban en WebM/Opus; **Safari** graba en **M4A** (AAC).
-- El resto de funciones (radio, favoritos, ecualizador, atajos) funcionan igual en los navegadores modernos actuales.
+- **Open folder** and **"Reopen last folder"** use the File System Access API — only available in **Chrome and Edge** (Chromium-based). In **Firefox** and others, "Open folder" automatically falls back to the classic folder picker (`<input type="file" webkitdirectory>`); "Reopen last folder" doesn't appear because the browser can't persist the permission.
+- The **recorder** uses whatever codec each browser supports via `MediaRecorder`: Chrome/Edge and Firefox record WebM/Opus; **Safari** records **M4A** (AAC).
+- Everything else (radio, favorites, equalizer, shortcuts) works the same across modern browsers.
 
-## Aviso
+## Disclaimer
 
-- Las emisoras se obtienen de [radio-browser.info](https://www.radio-browser.info/) y pertenecen a sus respectivos emisores — SoundWave solo las reproduce, no las aloja ni reclama ningún derecho sobre su contenido.
-- El grabador está pensado para uso personal (por ejemplo, guardar un fragmento que te gustó). Respeta los derechos de autor del contenido que grabes.
+- Stations are sourced from [radio-browser.info](https://www.radio-browser.info/) and belong to their respective broadcasters — SoundWave only plays them, it does not host them or claim any rights over their content.
+- The recorder is intended for personal use (e.g. saving a clip you liked). Respect the copyright of whatever you record.
 
-## Temas
+## Themes
 
-Los temas se definen con CSS variables en `globals.css`:
+Themes are defined with CSS variables in `globals.css`:
 
 ```css
 :root { /* Dark (default) */ }
@@ -227,35 +240,35 @@ Los temas se definen con CSS variables en `globals.css`:
 [data-theme="neon"] { /* Neon theme */ }
 ```
 
-El tema se persiste en `localStorage` y se aplica vía `data-theme` en `<html>`.
+The theme is persisted to `localStorage` and applied via `data-theme` on `<html>`.
 
 ## Roadmap
 
-- [ ] Soporte para Spotify/Apple Music
-- [ ] Letras de canciones sincronizadas
-- [ ] Modo fiesta con efectos visuales
-- [ ] Compartir playlists
-- [ ] Importar desde SoundCloud
+- [ ] Spotify/Apple Music support
+- [ ] Synced lyrics
+- [ ] Party mode with visual effects
+- [ ] Share playlists
+- [ ] Import from SoundCloud
 
-## Contribuir
+## Contributing
 
-1. Haz un fork y crea una rama (`git checkout -b feature/nueva-funcion`)
-2. Antes de abrir el PR, comprueba que todo sigue en verde:
+1. Fork the repo and create a branch (`git checkout -b feature/new-feature`)
+2. Before opening a PR, make sure everything is green:
    ```bash
    npm run lint && npx vitest run
    ```
-3. Abre el Pull Request describiendo el cambio
+3. Open the Pull Request describing the change
 
-## Licencia
+## License
 
-MIT — ver [LICENSE](LICENSE) para más detalles.
+MIT — see [LICENSE](LICENSE) for details.
 
-## Autor y contacto
+## Author & Contact
 
 **sexwax** — [github.com/sexwax](https://github.com/sexwax) — ia.cazurra.ai@gmail.com
 
-¿Encontraste un bug o tienes una idea? Abre un [issue](https://github.com/sexwax/soundwave/issues). ¿Quieres algo a medida o colaborar en un proyecto? Escríbeme por email.
+Found a bug or have an idea? Open an [issue](https://github.com/sexwax/soundwave/issues). Want something custom, or to collaborate on a project? Email me.
 
 ---
 
-Hecho con ❤️ usando React, TypeScript y Web Audio API
+Made with ❤️ using React, TypeScript, and the Web Audio API
