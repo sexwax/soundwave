@@ -18,6 +18,12 @@ playwright-report/
 blob-report/
 playwright/.cache/
 
+# Internal/local-only files — not meant for a public repo
+.claude/settings.local.json
+.understand-anything/
+docs/superpowers/
+prompts/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

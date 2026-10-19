@@ -2,6 +2,8 @@
 
 Reproductor de música y radio por internet moderno y minimalista.
 
+**🎧 Demo en producción: [soundwave-woad.vercel.app](https://soundwave-woad.vercel.app)**
+
 ![Soundwave](https://img.shields.io/badge/React-19-black?logo=react&style=flat)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&style=flat)
 ![Vite](https://img.shields.io/badge/Vite-8-purple?logo=vite&style=flat)
@@ -88,7 +90,6 @@ Si usas las variables opcionales, configúralas en Vercel:
 1. Ve a tu proyecto en Vercel
 2. **Settings** → **Environment Variables**
 3. Agrega:
-   - `VITE_LASTFM_API_KEY`
    - `VITE_CORS_PROXY_URL`
    - `VITE_APP_URL`
 4. Vuelve a desplegar para aplicar los cambios
@@ -110,12 +111,34 @@ npm run test:e2e     # Tests E2E con Playwright
 Crea un archivo `.env` basado en `.env.example`:
 
 ```bash
-VITE_LASTFM_API_KEY=tu_api_key       # Arte de álbumes desde Last.fm
-VITE_CORS_PROXY_URL=https://tu-proxy  # Proxy CORS para streams
-VITE_APP_URL=https://soundwave.app    # URL base para share links
+VITE_CORS_PROXY_URL=https://tu-proxy  # Proxy CORS para streams (ver sección "Proxy CORS")
+VITE_APP_URL=https://tu-dominio.app   # URL base para share links
 ```
 
 Todas son opcionales — la app funciona sin configuración.
+
+## Proxy CORS
+
+Algunas emisoras de radio no envían cabeceras CORS, así que el navegador bloquea su audio al intentar enrutarlo por el visualizador/ecualizador (y en algunos casos, directamente la reproducción). `proxy/cloudflare-worker.js` es un Worker que reenvía el stream añadiendo `Access-Control-Allow-Origin` (solo a los orígenes que tú permitas), sin cachear nada (es audio en directo). También valida que el destino sea una URL http/https pública (rechaza IPs privadas y localhost) y que la respuesta sea realmente audio/HLS antes de reenviarla.
+
+**Configurar `ALLOWED_ORIGINS` antes de desplegar** — es obligatorio; sin un origen en la lista, el Worker devuelve 403 a cualquier petición:
+
+- **Opción A — en `proxy/wrangler.toml`** (queda en el repo del Worker, no en el de SoundWave si lo despliegas por separado): edita el `[vars]` de `proxy/wrangler.toml` con los orígenes reales, separados por comas, por ejemplo `"https://soundwave.iaofspain.com,https://soundwave-woad.vercel.app,http://localhost:5173"`.
+- **Opción B — como secreto** (si prefieres no dejarlo en texto plano en el `.toml`):
+  ```bash
+  wrangler secret put ALLOWED_ORIGINS
+  # pega la lista separada por comas cuando lo pida
+  ```
+
+Desplegarlo:
+
+```bash
+npm i -g wrangler
+wrangler login
+wrangler deploy --config proxy/wrangler.toml
+```
+
+Wrangler imprime la URL del Worker al terminar (algo como `https://soundwave-cors-proxy.tu-cuenta.workers.dev`). Configúrala como `VITE_CORS_PROXY_URL` en tu `.env` (y en las variables de entorno de Vercel si despliegas ahí) y vuelve a construir. Sin esta variable, SoundWave sigue funcionando: simplemente no habrá fallback para las emisoras que bloqueen CORS.
 
 ## Estructura del Proyecto
 
@@ -183,6 +206,17 @@ Pulsa `?` dentro de la app para ver esta lista en un modal.
 | `E` | Abrir / cerrar el ecualizador |
 | `?` | Mostrar esta ayuda |
 
+## Compatibilidad de navegadores
+
+- **Abrir carpeta** y **"Reabrir última carpeta"** usan la File System Access API — solo disponible en **Chrome y Edge** (basados en Chromium). En **Firefox** y el resto, "Abrir carpeta" cae automáticamente a la selección de carpeta clásica (`<input type="file" webkitdirectory>`); "Reabrir última carpeta" no aparece porque el navegador no puede guardar el permiso.
+- El **grabador** usa el códec que cada navegador soporte vía `MediaRecorder`: Chrome/Edge y Firefox graban en WebM/Opus; **Safari** graba en **M4A** (AAC).
+- El resto de funciones (radio, favoritos, ecualizador, atajos) funcionan igual en los navegadores modernos actuales.
+
+## Aviso
+
+- Las emisoras se obtienen de [radio-browser.info](https://www.radio-browser.info/) y pertenecen a sus respectivos emisores — SoundWave solo las reproduce, no las aloja ni reclama ningún derecho sobre su contenido.
+- El grabador está pensado para uso personal (por ejemplo, guardar un fragmento que te gustó). Respeta los derechos de autor del contenido que grabes.
+
 ## Temas
 
 Los temas se definen con CSS variables en `globals.css`:
@@ -195,14 +229,6 @@ Los temas se definen con CSS variables en `globals.css`:
 
 El tema se persiste en `localStorage` y se aplica vía `data-theme` en `<html>`.
 
-## Capturas
-
-> Agrega screenshots de la app aquí:
-> - Vista del reproductor principal
-> - Vista de radio con búsqueda
-> - Lista de favoritos
-> - Grabadora con VU meter
-
 ## Roadmap
 
 - [ ] Soporte para Spotify/Apple Music
@@ -213,19 +239,22 @@ El tema se persiste en `localStorage` y se aplica vía `data-theme` en `<html>`.
 
 ## Contribuir
 
-1. Fork el proyecto
-2. Crea una rama (`git checkout -b feature/nueva-funcion`)
-3. Committea tus cambios (`git commit -m 'feat: agrega nueva función'`)
-4. Push a la rama (`git push origin feature/nueva-funcion`)
-5. Abre un Pull Request
+1. Haz un fork y crea una rama (`git checkout -b feature/nueva-funcion`)
+2. Antes de abrir el PR, comprueba que todo sigue en verde:
+   ```bash
+   npm run lint && npx vitest run
+   ```
+3. Abre el Pull Request describiendo el cambio
 
 ## Licencia
 
 MIT — ver [LICENSE](LICENSE) para más detalles.
 
-## Autor
+## Autor y contacto
 
-**sexwax** — [GitHub](https://github.com/sexwax/soundwave)
+**sexwax** — [github.com/sexwax](https://github.com/sexwax) — ia.cazurra.ai@gmail.com
+
+¿Encontraste un bug o tienes una idea? Abre un [issue](https://github.com/sexwax/soundwave/issues). ¿Quieres algo a medida o colaborar en un proyecto? Escríbeme por email.
 
 ---
 

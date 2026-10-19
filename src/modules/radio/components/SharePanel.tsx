@@ -21,7 +21,7 @@ export function SharePanel({ station }: Props) {
   const hasShare = typeof navigator !== 'undefined' && !!navigator.share;
 
   const shareUrl =
-    (import.meta.env.VITE_APP_URL ?? window.location.origin) +
+    (import.meta.env.VITE_APP_URL || window.location.origin) +
     '/station/' +
     station.stationuuid;
 
