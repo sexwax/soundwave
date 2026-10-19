@@ -6,6 +6,14 @@ window.HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined);
 window.HTMLMediaElement.prototype.pause = vi.fn();
 window.HTMLMediaElement.prototype.load = vi.fn();
 
+// jsdom 30's URL.createObjectURL throws on File/Blob objects built in tests
+// ("Cannot read properties of undefined (reading '_buffer')") — stub it so
+// code paths that register files/covers (useLocalFiles, localEngine) don't
+// crash under test.
+let objectUrlCounter = 0;
+URL.createObjectURL = vi.fn(() => `blob:mock-${objectUrlCounter++}`);
+URL.revokeObjectURL = vi.fn();
+
 class MockAudioParam {
   value = 0;
   setTargetAtTime = vi.fn();

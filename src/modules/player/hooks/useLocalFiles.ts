@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { parseBlob } from 'music-metadata-browser';
+import { parseBlob } from 'music-metadata';
 import type { LocalTrack } from '../../favorites/db/favoritesDb';
 import { usePlayerStore } from '../store/playerStore';
 import { registerFile, registerCover, releaseFiles } from '../services/localEngine';
@@ -43,7 +43,7 @@ async function readFilesFromHandle(dirHandle: FileSystemDirectoryHandle, prefix 
   return results;
 }
 
-async function parseTrack(file: File, relativePath: string): Promise<LocalTrack> {
+export async function parseTrack(file: File, relativePath: string): Promise<LocalTrack> {
   // Keyed by relativePath + size + lastModified so two files with the same name
   // in different folders never collide.
   const filePath = `${relativePath}|${file.size}|${file.lastModified}`;
@@ -65,7 +65,7 @@ async function parseTrack(file: File, relativePath: string): Promise<LocalTrack>
     if (meta.common.genre?.[0]) genre = meta.common.genre[0];
     const pic = meta.common.picture?.[0];
     if (pic) {
-      const blob = new Blob([new Uint8Array(pic.data).buffer as ArrayBuffer], { type: pic.format });
+      const blob = new Blob([new Uint8Array(pic.data)], { type: pic.format });
       coverUrl = URL.createObjectURL(blob);
       registerCover(filePath, coverUrl);
     }
