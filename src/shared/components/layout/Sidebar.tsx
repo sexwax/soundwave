@@ -55,15 +55,12 @@ export function Sidebar() {
 
       <aside
         style={{
-          width: 'var(--sidebar-width)',
           background: 'var(--bg-surface)',
           borderRight: '1px solid var(--border-subtle)',
           display: 'flex',
           flexDirection: 'column',
           padding: '16px 0',
           height: '100%',
-          flexShrink: 0,
-          position: 'relative',
         }}
         className={isOpen ? 'sidebar-open' : ''}
       >

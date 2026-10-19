@@ -74,6 +74,12 @@ h1, h2, h3, h4 {
   font-family: var(--font-display);
 }
 
+aside {
+  width: var(--sidebar-width);
+  position: relative;
+  flex-shrink: 0;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;

@@ -2,7 +2,7 @@ import { chromium } from '@playwright/test';
 import { execSync, spawn } from 'node:child_process';
 import sharp from 'sharp';
 import process from 'node:process';
-import { mkdirSync, statSync } from 'node:fs';
+import { mkdirSync, statSync, renameSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -58,7 +58,9 @@ async function waitForStations(page) {
 
 async function shrinkIfNeeded(path) {
   if (statSync(path).size > MAX_BYTES) {
-    await sharp(path).png({ quality: 80, compressionLevel: 9 }).toFile(path);
+    const tmpPath = `${path}.tmp`;
+    await sharp(path).png({ palette: true, quality: 80, compressionLevel: 9 }).toFile(tmpPath);
+    renameSync(tmpPath, path);
   }
 }
 
@@ -80,8 +82,15 @@ async function setTheme(page, theme) {
 async function main() {
   execSync('npm run build', { cwd: ROOT, stdio: 'inherit' });
   const preview = startPreview();
-  await preview.ready;
+  try {
+    await preview.ready;
+    await captureAll();
+  } finally {
+    stopPreview(preview.child);
+  }
+}
 
+async function captureAll() {
   const browser = await chromium.launch();
   try {
     const context = await browser.newContext({
@@ -102,8 +111,7 @@ async function main() {
     await capture(page, 'equalizer');
     await page.click('button[aria-label="Cerrar ecualizador"]');
 
-    // d) Theme variants on Radio
-    await capture(page, 'theme-dark');
+    // d) Theme variants on Radio — dark reuses radio.png (identical state, no need to recapture)
     await setTheme(page, 'light');
     await capture(page, 'theme-light');
     await setTheme(page, 'neon');
@@ -138,7 +146,6 @@ async function main() {
     await mobileContext.close();
   } finally {
     await browser.close();
-    stopPreview(preview.child);
   }
 }
 

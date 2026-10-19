@@ -27,6 +27,16 @@ test('switching theme updates data-theme on <html>', async ({ page }) => {
   await expect(html).toHaveAttribute('data-theme', 'neon');
 });
 
+test('mobile sidebar stays off-screen when closed', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/radio');
+  await expect(page.getByText('Emisoras de radio')).toBeVisible();
+
+  const logoBox = await page.locator('aside h1').boundingBox();
+  expect(logoBox).not.toBeNull();
+  expect(logoBox!.x + logoBox!.width).toBeLessThanOrEqual(0);
+});
+
 test('a non-existent station uuid does not crash the radio page', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (err) => errors.push(err.message));

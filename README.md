@@ -30,8 +30,8 @@ A modern, minimalist local music player and internet radio app.
 
 | | |
 |---|---|
-| **Equalizer** ![Equalizer](docs/screenshots/equalizer.png) | **Local player / Favorites** ![Local player](docs/screenshots/player.png) |
-| **Dark theme** ![Dark theme](docs/screenshots/theme-dark.png) | **Light theme** ![Light theme](docs/screenshots/theme-light.png) |
+| **Equalizer** ![Equalizer](docs/screenshots/equalizer.png) | **Local player** ![Local player](docs/screenshots/player.png) |
+| **Dark theme** ![Dark theme](docs/screenshots/radio.png) | **Light theme** ![Light theme](docs/screenshots/theme-light.png) |
 | **Neon theme** ![Neon theme](docs/screenshots/theme-neon.png) | **Mobile view** ![Mobile view](docs/screenshots/mobile.png) |
 
 ## Tech Stack

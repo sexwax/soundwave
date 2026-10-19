@@ -30,8 +30,8 @@ Reproductor de música y radio por internet moderno y minimalista.
 
 | | |
 |---|---|
-| **Ecualizador** ![Ecualizador](docs/screenshots/equalizer.png) | **Reproductor local / Favoritos** ![Reproductor local](docs/screenshots/player.png) |
-| **Tema Dark** ![Tema Dark](docs/screenshots/theme-dark.png) | **Tema Light** ![Tema Light](docs/screenshots/theme-light.png) |
+| **Ecualizador** ![Ecualizador](docs/screenshots/equalizer.png) | **Reproductor local** ![Reproductor local](docs/screenshots/player.png) |
+| **Tema Dark** ![Tema Dark](docs/screenshots/radio.png) | **Tema Light** ![Tema Light](docs/screenshots/theme-light.png) |
 | **Tema Neon** ![Tema Neon](docs/screenshots/theme-neon.png) | **Vista móvil** ![Vista móvil](docs/screenshots/mobile.png) |
 
 ## Stack Tecnológico
