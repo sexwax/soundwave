@@ -34,7 +34,7 @@ export function pwaPlugin(): PluginOption {
           options: {
             cacheName: 'station-favicon-cache',
             cacheableResponse: { statuses: [0, 200] },
-            expiration: { maxEntries: 300, maxAgeSeconds: 30 * 24 * 60 * 60 },
+            expiration: { maxEntries: 60, maxAgeSeconds: 30 * 24 * 60 * 60, purgeOnQuotaError: true },
           },
         },
         {
