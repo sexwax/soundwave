@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Documentation
+
+There are two READMEs: `README.md` (English, canonical) and `README.es.md` (Spanish). They must stay in sync — same sections, same order. Any user-facing documentation change goes in both.
+
 ## Commands
 
 ```bash
