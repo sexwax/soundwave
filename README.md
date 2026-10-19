@@ -119,17 +119,26 @@ Todas son opcionales — la app funciona sin configuración.
 
 ## Proxy CORS
 
-Algunas emisoras de radio no envían cabeceras CORS, así que el navegador bloquea su audio al intentar enrutarlo por el visualizador/ecualizador (y en algunos casos, directamente la reproducción). `proxy/cloudflare-worker.js` es un Worker mínimo que reenvía el stream añadiendo `Access-Control-Allow-Origin: *`, sin cachear nada (es audio en directo).
+Algunas emisoras de radio no envían cabeceras CORS, así que el navegador bloquea su audio al intentar enrutarlo por el visualizador/ecualizador (y en algunos casos, directamente la reproducción). `proxy/cloudflare-worker.js` es un Worker que reenvía el stream añadiendo `Access-Control-Allow-Origin` (solo a los orígenes que tú permitas), sin cachear nada (es audio en directo). También valida que el destino sea una URL http/https pública (rechaza IPs privadas y localhost) y que la respuesta sea realmente audio/HLS antes de reenviarla.
+
+**Configurar `ALLOWED_ORIGINS` antes de desplegar** — es obligatorio; sin un origen en la lista, el Worker devuelve 403 a cualquier petición:
+
+- **Opción A — en `proxy/wrangler.toml`** (queda en el repo del Worker, no en el de SoundWave si lo despliegas por separado): edita el `[vars]` de `proxy/wrangler.toml` con los orígenes reales, separados por comas, por ejemplo `"https://soundwave.iaofspain.com,https://soundwave-woad.vercel.app,http://localhost:5173"`.
+- **Opción B — como secreto** (si prefieres no dejarlo en texto plano en el `.toml`):
+  ```bash
+  wrangler secret put ALLOWED_ORIGINS
+  # pega la lista separada por comas cuando lo pida
+  ```
 
 Desplegarlo:
 
 ```bash
 npm i -g wrangler
 wrangler login
-wrangler deploy proxy/cloudflare-worker.js
+wrangler deploy --config proxy/wrangler.toml
 ```
 
-Wrangler imprime la URL del Worker al terminar (algo como `https://cloudflare-worker.tu-cuenta.workers.dev`). Configúrala como `VITE_CORS_PROXY_URL` en tu `.env` (y en las variables de entorno de Vercel si despliegas ahí) y vuelve a construir. Sin esta variable, SoundWave sigue funcionando: simplemente no habrá fallback para las emisoras que bloqueen CORS.
+Wrangler imprime la URL del Worker al terminar (algo como `https://soundwave-cors-proxy.tu-cuenta.workers.dev`). Configúrala como `VITE_CORS_PROXY_URL` en tu `.env` (y en las variables de entorno de Vercel si despliegas ahí) y vuelve a construir. Sin esta variable, SoundWave sigue funcionando: simplemente no habrá fallback para las emisoras que bloqueen CORS.
 
 ## Estructura del Proyecto
 
