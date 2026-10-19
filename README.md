@@ -115,6 +115,20 @@ VITE_APP_URL=https://tu-dominio.app   # URL base para share links
 
 Todas son opcionales — la app funciona sin configuración.
 
+## Proxy CORS
+
+Algunas emisoras de radio no envían cabeceras CORS, así que el navegador bloquea su audio al intentar enrutarlo por el visualizador/ecualizador (y en algunos casos, directamente la reproducción). `proxy/cloudflare-worker.js` es un Worker mínimo que reenvía el stream añadiendo `Access-Control-Allow-Origin: *`, sin cachear nada (es audio en directo).
+
+Desplegarlo:
+
+```bash
+npm i -g wrangler
+wrangler login
+wrangler deploy proxy/cloudflare-worker.js
+```
+
+Wrangler imprime la URL del Worker al terminar (algo como `https://cloudflare-worker.tu-cuenta.workers.dev`). Configúrala como `VITE_CORS_PROXY_URL` en tu `.env` (y en las variables de entorno de Vercel si despliegas ahí) y vuelve a construir. Sin esta variable, SoundWave sigue funcionando: simplemente no habrá fallback para las emisoras que bloqueen CORS.
+
 ## Estructura del Proyecto
 
 ```
