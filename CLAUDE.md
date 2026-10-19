@@ -16,16 +16,24 @@ Vitest and Playwright are configured and wired to npm scripts:
 ```bash
 npm test           # Vitest in watch mode
 npm run test:ui    # Vitest with web UI (port 51204)
-npm run test:e2e   # Playwright E2E (requires npm run dev running)
+npm run test:e2e   # Playwright E2E — playwright.config.ts starts `npm run dev` itself (reuses one already running)
 npx vitest run     # Single run (CI)
 ```
 
 Config file: `vitest.config.ts` — uses `@vitejs/plugin-react`, `jsdom` environment, globals enabled, `@` alias mapped to `/src`.
 
+`src/__tests__/setup.ts` (wired via `vitest.config.ts`'s `setupFiles`) mocks `HTMLMediaElement.prototype.play/pause/load` (jsdom throws "not implemented" otherwise) and stubs a minimal `AudioContext` (jsdom has no Web Audio at all).
+
 Tests live under `src/__tests__/`:
 - `example.test.ts` — baseline sanity check (`1 + 1 === 2`)
+- `playerStore.test.ts` — shuffle keeps the current track, `nextTrack`/`prevTrack` across all three repeat modes (including single-track queues), `appendToQueue` dedup, `playIndex` restart-on-same-track, `partialize` only persisting preferences
+- `eqStore.test.ts` — presets, `setGain` switching the preset to "Custom", `effectiveGains` under bypass, `togglePanel` and that `panelOpen` is excluded from persistence
 - `radioAttempts.test.ts` — `buildStreamAttempts` (proxy/no-proxy, HLS with/without native support, empty `url_resolved`, no duplicate candidate URLs)
-- `eqStore.test.ts` — `togglePanel` and that `panelOpen` is excluded from persistence
+- `playbackCoordinator.test.ts` — `claimPlayback` stopping every other source and updating `active`
+- `formatters.test.ts` — `formatTime` edge cases (0, `NaN`, `Infinity`, minute rollover) and `flagEmoji`
+- `localEngine.test.ts` — `ended` advances the queue, a `pause` while `el.ended` is true doesn't clear `isPlaying`, `previous()`'s 3-second restart-vs-skip threshold
+
+E2E (Playwright, `playwright.config.ts` + `e2e/smoke.spec.ts`): the 4 routes load without console errors, switching theme updates `data-theme`, and `/station/<unknown-uuid>` doesn't crash the radio page.
 
 **Dependency note**: `vite-plugin-pwa@1.2.0` does not declare Vite 8 in its peer range. A `.npmrc` with `legacy-peer-deps=true` is checked in to prevent install failures. `jsdom` must be installed manually with `--legacy-peer-deps` on fresh checkouts. `sharp` was used once (as a temporary devDependency) to regenerate the PWA PNG icons from their SVG sources and was then uninstalled — reinstall it (`npm i -D sharp --legacy-peer-deps`) only if you need to run `scripts/generate-icons.mjs` again after changing an icon source.
 
