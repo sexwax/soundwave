@@ -39,7 +39,7 @@ Tests live under `src/__tests__/`:
 
 E2E (Playwright, `playwright.config.ts` + `e2e/smoke.spec.ts`): the 4 routes load without console errors, switching theme updates `data-theme`, and `/station/<unknown-uuid>` doesn't crash the radio page.
 
-**Dependency note**: `vite-plugin-pwa@1.2.0` does not declare Vite 8 in its peer range. A `.npmrc` with `legacy-peer-deps=true` is checked in to prevent install failures. `jsdom` must be installed manually with `--legacy-peer-deps` on fresh checkouts. `sharp` was used once (as a temporary devDependency) to regenerate the PWA PNG icons from their SVG sources and was then uninstalled — reinstall it (`npm i -D sharp --legacy-peer-deps`) only if you need to run `scripts/generate-icons.mjs` again after changing an icon source. Same pattern applies to `scripts/screenshots.mjs` (regenerates `docs/screenshots/*.png`): reinstall `sharp` first, run `npm run screenshots`, then uninstall it again.
+**Dependency note**: `vite-plugin-pwa@2.0.0`'s peer range covers Vite 8 (`^3.1.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0`), so `npm install` works with no flags and no `.npmrc` override — the `legacy-peer-deps=true` `.npmrc` that was needed for `vite-plugin-pwa@1.2.0` has been removed. `sharp` was used once (as a temporary devDependency) to regenerate the PWA PNG icons from their SVG sources and was then uninstalled — reinstall it (`npm i -D sharp`) only if you need to run `scripts/generate-icons.mjs` again after changing an icon source. Same pattern applies to `scripts/screenshots.mjs` (regenerates `docs/screenshots/*.png`): reinstall `sharp` first, run `npm run screenshots`, then uninstall it again.
 
 ## Architecture
 
