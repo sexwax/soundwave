@@ -2,6 +2,8 @@
 
 Reproductor de música y radio por internet moderno y minimalista.
 
+**🎧 Demo en producción: [soundwave-woad.vercel.app](https://soundwave-woad.vercel.app)**
+
 ![Soundwave](https://img.shields.io/badge/React-19-black?logo=react&style=flat)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&style=flat)
 ![Vite](https://img.shields.io/badge/Vite-8-purple?logo=vite&style=flat)
@@ -195,6 +197,17 @@ Pulsa `?` dentro de la app para ver esta lista en un modal.
 | `E` | Abrir / cerrar el ecualizador |
 | `?` | Mostrar esta ayuda |
 
+## Compatibilidad de navegadores
+
+- **Abrir carpeta** y **"Reabrir última carpeta"** usan la File System Access API — solo disponible en **Chrome y Edge** (basados en Chromium). En **Firefox** y el resto, "Abrir carpeta" cae automáticamente a la selección de carpeta clásica (`<input type="file" webkitdirectory>`); "Reabrir última carpeta" no aparece porque el navegador no puede guardar el permiso.
+- El **grabador** usa el códec que cada navegador soporte vía `MediaRecorder`: Chrome/Edge y Firefox graban en WebM/Opus; **Safari** graba en **M4A** (AAC).
+- El resto de funciones (radio, favoritos, ecualizador, atajos) funcionan igual en los navegadores modernos actuales.
+
+## Aviso
+
+- Las emisoras se obtienen de [radio-browser.info](https://www.radio-browser.info/) y pertenecen a sus respectivos emisores — SoundWave solo las reproduce, no las aloja ni reclama ningún derecho sobre su contenido.
+- El grabador está pensado para uso personal (por ejemplo, guardar un fragmento que te gustó). Respeta los derechos de autor del contenido que grabes.
+
 ## Temas
 
 Los temas se definen con CSS variables en `globals.css`:
@@ -207,14 +220,6 @@ Los temas se definen con CSS variables en `globals.css`:
 
 El tema se persiste en `localStorage` y se aplica vía `data-theme` en `<html>`.
 
-## Capturas
-
-> Agrega screenshots de la app aquí:
-> - Vista del reproductor principal
-> - Vista de radio con búsqueda
-> - Lista de favoritos
-> - Grabadora con VU meter
-
 ## Roadmap
 
 - [ ] Soporte para Spotify/Apple Music
@@ -225,19 +230,22 @@ El tema se persiste en `localStorage` y se aplica vía `data-theme` en `<html>`.
 
 ## Contribuir
 
-1. Fork el proyecto
-2. Crea una rama (`git checkout -b feature/nueva-funcion`)
-3. Committea tus cambios (`git commit -m 'feat: agrega nueva función'`)
-4. Push a la rama (`git push origin feature/nueva-funcion`)
-5. Abre un Pull Request
+1. Haz un fork y crea una rama (`git checkout -b feature/nueva-funcion`)
+2. Antes de abrir el PR, comprueba que todo sigue en verde:
+   ```bash
+   npm run lint && npx vitest run
+   ```
+3. Abre el Pull Request describiendo el cambio
 
 ## Licencia
 
 MIT — ver [LICENSE](LICENSE) para más detalles.
 
-## Autor
+## Autor y contacto
 
-**sexwax** — [GitHub](https://github.com/sexwax/soundwave)
+**Luis** — [github.com/sexwax](https://github.com/sexwax) — ia.cazurra.ai@gmail.com
+
+¿Encontraste un bug o tienes una idea? Abre un [issue](https://github.com/sexwax/soundwave/issues). ¿Quieres algo a medida o colaborar en un proyecto? Escríbeme por email.
 
 ---
 
