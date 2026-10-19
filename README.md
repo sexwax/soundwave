@@ -243,7 +243,7 @@ MIT — ver [LICENSE](LICENSE) para más detalles.
 
 ## Autor y contacto
 
-**Luis** — [github.com/sexwax](https://github.com/sexwax) — ia.cazurra.ai@gmail.com
+**sexwax** — [github.com/sexwax](https://github.com/sexwax) — ia.cazurra.ai@gmail.com
 
 ¿Encontraste un bug o tienes una idea? Abre un [issue](https://github.com/sexwax/soundwave/issues). ¿Quieres algo a medida o colaborar en un proyecto? Escríbeme por email.
 

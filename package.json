@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Reproductor de música local, radio online y grabador — PWA hecha con React y TypeScript.",
   "license": "MIT",
-  "author": "Luis <ia.cazurra.ai@gmail.com>",
+  "author": "sexwax <ia.cazurra.ai@gmail.com>",
   "repository": {
     "type": "git",
     "url": "https://github.com/sexwax/soundwave.git"
