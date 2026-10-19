@@ -11,6 +11,8 @@ Reproductor de música y radio por internet moderno y minimalista.
 ![Vite](https://img.shields.io/badge/Vite-8-purple?logo=vite&style=flat)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat)
 
+![Página de Radio](docs/screenshots/radio.png)
+
 ## Características
 
 - **Reproductor de archivos locales**: Reproduce tu biblioteca de música con metadatos ID3, aleatorio y repetición (cola o pista) reales, crossfade, filtro de pistas y "Reabrir última carpeta"
@@ -23,6 +25,14 @@ Reproductor de música y radio por internet moderno y minimalista.
 - **3 temas visuales**: Dark (default), Light y Neon
 - **PWA instalable**: iconos reales (incluido uno `maskable`), funciona offline con service worker y caché inteligente
 - **Diseño responsive**: Funciona en desktop, tablet y móvil
+
+## Capturas
+
+| | |
+|---|---|
+| **Ecualizador** ![Ecualizador](docs/screenshots/equalizer.png) | **Reproductor local / Favoritos** ![Reproductor local](docs/screenshots/player.png) |
+| **Tema Dark** ![Tema Dark](docs/screenshots/theme-dark.png) | **Tema Light** ![Tema Light](docs/screenshots/theme-light.png) |
+| **Tema Neon** ![Tema Neon](docs/screenshots/theme-neon.png) | **Vista móvil** ![Vista móvil](docs/screenshots/mobile.png) |
 
 ## Stack Tecnológico
 
@@ -106,6 +116,7 @@ npm run lint         # Ejecutar ESLint
 npm test             # Tests unitarios (watch mode)
 npm run test:ui      # Tests con interfaz web
 npm run test:e2e     # Tests E2E con Playwright
+npm run screenshots  # Regenera docs/screenshots/*.png con Playwright (necesita `npm i -D sharp` antes — ver CLAUDE.md)
 ```
 
 ## Variables de Entorno

@@ -11,6 +11,8 @@ A modern, minimalist local music player and internet radio app.
 ![Vite](https://img.shields.io/badge/Vite-8-purple?logo=vite&style=flat)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat)
 
+![Radio page](docs/screenshots/radio.png)
+
 ## Features
 
 - **Local file player**: Play your music library with ID3 metadata, real shuffle and repeat (queue or track), crossfade, track filtering, and "Reopen last folder"
@@ -23,6 +25,14 @@ A modern, minimalist local music player and internet radio app.
 - **3 visual themes**: Dark (default), Light, and Neon
 - **Installable PWA**: real icons (including a `maskable` one), works offline with a service worker and smart caching
 - **Responsive design**: works on desktop, tablet, and mobile
+
+## Screenshots
+
+| | |
+|---|---|
+| **Equalizer** ![Equalizer](docs/screenshots/equalizer.png) | **Local player / Favorites** ![Local player](docs/screenshots/player.png) |
+| **Dark theme** ![Dark theme](docs/screenshots/theme-dark.png) | **Light theme** ![Light theme](docs/screenshots/theme-light.png) |
+| **Neon theme** ![Neon theme](docs/screenshots/theme-neon.png) | **Mobile view** ![Mobile view](docs/screenshots/mobile.png) |
 
 ## Tech Stack
 
@@ -106,6 +116,7 @@ npm run lint         # Run ESLint
 npm test             # Unit tests (watch mode)
 npm run test:ui      # Tests with a web UI
 npm run test:e2e     # E2E tests with Playwright
+npm run screenshots  # Regenerates docs/screenshots/*.png with Playwright (needs `npm i -D sharp` first — see CLAUDE.md)
 ```
 
 ## Environment Variables
