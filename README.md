@@ -88,7 +88,6 @@ Si usas las variables opcionales, configúralas en Vercel:
 1. Ve a tu proyecto en Vercel
 2. **Settings** → **Environment Variables**
 3. Agrega:
-   - `VITE_LASTFM_API_KEY`
    - `VITE_CORS_PROXY_URL`
    - `VITE_APP_URL`
 4. Vuelve a desplegar para aplicar los cambios
@@ -110,9 +109,8 @@ npm run test:e2e     # Tests E2E con Playwright
 Crea un archivo `.env` basado en `.env.example`:
 
 ```bash
-VITE_LASTFM_API_KEY=tu_api_key       # Arte de álbumes desde Last.fm
-VITE_CORS_PROXY_URL=https://tu-proxy  # Proxy CORS para streams
-VITE_APP_URL=https://soundwave.app    # URL base para share links
+VITE_CORS_PROXY_URL=https://tu-proxy  # Proxy CORS para streams (ver sección "Proxy CORS")
+VITE_APP_URL=https://tu-dominio.app   # URL base para share links
 ```
 
 Todas son opcionales — la app funciona sin configuración.

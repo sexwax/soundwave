@@ -119,9 +119,8 @@ Defined in `.env.example`. All are optional — the app works without them:
 
 | Variable | Purpose |
 |---|---|
-| `VITE_LASTFM_API_KEY` | Album art fallback from Last.fm |
-| `VITE_CORS_PROXY_URL` | Cloudflare Worker proxy for CORS-blocked streams — empty by default; `radioPlayer` tries the direct URL regardless |
-| `VITE_APP_URL` | Base URL for share links / Open Graph tags |
+| `VITE_CORS_PROXY_URL` | Cloudflare Worker proxy for CORS-blocked streams (see `proxy/cloudflare-worker.js`) — empty by default; `radioPlayer` tries the direct URL regardless |
+| `VITE_APP_URL` | Base URL for share links / Open Graph tags — empty by default, falls back to `window.location.origin` |
 
 ### PWA / Service Worker
 
