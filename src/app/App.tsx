@@ -7,6 +7,9 @@ import { NotificationProvider } from './providers/NotificationProvider';
 import { Sidebar } from '../shared/components/layout/Sidebar';
 import { TopBar } from '../shared/components/layout/TopBar';
 import { MiniPlayer } from '../shared/components/layout/MiniPlayer';
+import { ShortcutsHelp } from '../shared/components/layout/ShortcutsHelp';
+import { EqualizerPanel } from '../shared/components/audio/EqualizerPanel';
+import { Modal } from '../shared/components/ui/Modal';
 import { AppRouter } from './Router';
 import { useKeyboardShortcuts } from '../shared/hooks/useKeyboardShortcuts';
 import { useMediaSession } from '../shared/hooks/useMediaSession';
@@ -14,11 +17,10 @@ import { useFavoritesStore } from '../modules/favorites/store/favoritesStore';
 import { useAudioEngine } from '../modules/player/hooks/useAudioEngine';
 
 function AppInner() {
-  useKeyboardShortcuts();
+  const { showHelp, closeHelp } = useKeyboardShortcuts();
   useMediaSession();
   useAudioEngine();
-  const loadFavorites = useFavoritesStore((s) => s.load);
-  useEffect(() => { loadFavorites(); }, []);
+  useEffect(() => { void useFavoritesStore.getState().load(); }, []);
 
   return (
     <div
@@ -44,7 +46,11 @@ function AppInner() {
           <AppRouter />
         </main>
       </div>
+      <EqualizerPanel />
       <MiniPlayer />
+      <Modal open={showHelp} onClose={closeHelp} title="Atajos de teclado">
+        <ShortcutsHelp />
+      </Modal>
     </div>
   );
 }

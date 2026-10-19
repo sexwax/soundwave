@@ -1,3 +1,5 @@
+import type { RadioStation } from '../store/radioStore';
+
 const FALLBACK_BASE = 'https://de1.api.radio-browser.info/json';
 const DISCOVERY_URL = 'https://all.api.radio-browser.info/json/servers';
 
@@ -13,6 +15,11 @@ export interface SearchParams {
   reverse?: boolean;
   offset?: number;
   limit?: number;
+}
+
+export interface VoteResult {
+  ok: boolean;
+  message: string;
 }
 
 interface ServerInfo {
@@ -53,7 +60,7 @@ async function apiFetchWithRetry<T>(path: string): Promise<T> {
 }
 
 export const radioBrowserApi = {
-  search: (params: SearchParams = {}) => {
+  search: (params: SearchParams = {}): Promise<RadioStation[]> => {
     const q = new URLSearchParams({
       hidebroken: String(params.hidebroken ?? true),
       order: params.order ?? 'votes',
@@ -67,11 +74,13 @@ export const radioBrowserApi = {
       ...(params.bitrateMin && { bitrateMin: String(params.bitrateMin) }),
       ...(params.codec && { codec: params.codec }),
     });
-    return apiFetchWithRetry(`/stations/search?${q}`);
+    return apiFetchWithRetry<RadioStation[]>(`/stations/search?${q}`);
   },
-  topVote: (limit = 100) => apiFetchWithRetry(`/stations/topvote/${limit}`),
+  topVote: (limit = 100): Promise<RadioStation[]> => apiFetchWithRetry<RadioStation[]>(`/stations/topvote/${limit}`),
+  byUuid: (uuid: string): Promise<RadioStation[]> =>
+    apiFetchWithRetry<RadioStation[]>(`/stations/byuuid?uuids=${encodeURIComponent(uuid)}`),
   countries: () => apiFetchWithRetry('/countries'),
   tags: (limit = 100) => apiFetchWithRetry(`/tags?order=stationcount&reverse=true&limit=${limit}`),
   registerClick: (uuid: string) => apiFetchWithRetry(`/url/${uuid}`).catch(() => null),
-  vote: (uuid: string) => apiFetchWithRetry(`/vote/${uuid}`),
+  vote: (uuid: string): Promise<VoteResult> => apiFetchWithRetry<VoteResult>(`/vote/${uuid}`),
 };

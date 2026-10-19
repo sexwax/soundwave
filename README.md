@@ -9,13 +9,15 @@ Reproductor de música y radio por internet moderno y minimalista.
 
 ## Características
 
-- **Reproductor de archivos locales**: Reproduce tu biblioteca de música con soporte para metadatos ID3
-- **Radio por internet**: Busca y escucha estaciones de radio de todo el mundo vía [radio-browser.info](https://www.radio-browser.info/)
-- **Sistema de favoritos**: Guarda tus estaciones y canciones favoritas con persistencia IndexedDB
-- **Grabadora de audio**: Graba audio desde tu micrófono con visualización VU en tiempo real
+- **Reproductor de archivos locales**: Reproduce tu biblioteca de música con metadatos ID3, aleatorio y repetición (cola o pista) reales, crossfade, filtro de pistas y "Reabrir última carpeta"
+- **Radio por internet**: Busca y escucha estaciones de todo el mundo vía [radio-browser.info](https://www.radio-browser.info/), con soporte HLS y reconexión automática
+- **Ecualizador global de 10 bandas**: Un panel accesible desde cualquier página (MiniPlayer, reproductor local o radio), con presets y bypass
+- **Sistema de favoritos**: Guarda y exporta/importa tus estaciones favoritas, con historial de reproducción local y de radio (persistencia IndexedDB)
+- **Grabadora de audio**: Graba "Esta app", una pestaña o una ventana, con visualización VU en tiempo real — sobrevive a navegar a otra página mientras grabas
 - **Visualizador de audio**: Espectro de audio en tiempo real con Web Audio API
+- **Atajos de teclado**: reproducir/pausar, pistas, volumen, mute, ecualizador — pulsa `?` para ver la lista completa
 - **3 temas visuales**: Dark (default), Light y Neon
-- **PWA**: Funciona offline con service worker y caché inteligente
+- **PWA instalable**: iconos reales (incluido uno `maskable`), funciona offline con service worker y caché inteligente
 - **Diseño responsive**: Funciona en desktop, tablet y móvil
 
 ## Stack Tecnológico
@@ -27,7 +29,7 @@ Reproductor de música y radio por internet moderno y minimalista.
 | Estilos | TailwindCSS 4 + CSS Variables |
 | Estado | Zustand |
 | Router | React Router DOM 7 |
-| Audio | Howler.js + Web Audio API |
+| Audio | `<audio>` nativo + hls.js + Web Audio API |
 | DB | Dexie.js (IndexedDB) |
 | Animaciones | Framer Motion |
 | Tests | Vitest + Playwright |
@@ -123,19 +125,25 @@ src/
 │   ├── App.tsx
 │   ├── Router.tsx
 │   └── providers/
-│       ├── AudioProvider.tsx
+│       ├── AudioProvider.tsx       # expone el grafo singleton via contexto, no lo crea
 │       ├── ThemeProvider.tsx
 │       └── NotificationProvider.tsx
 ├── modules/                # Módulos autocontenidos
 │   ├── player/             # Reproducción de archivos locales
+│   │   ├── services/       #   localEngine.ts — el <audio> real, a nivel de módulo
+│   │   └── store/
 │   ├── radio/              # Radio por internet
+│   │   └── services/       #   radioPlayer.ts, radioBrowserApi.ts
 │   ├── favorites/          # Favoritos con IndexedDB
 │   └── recorder/           # Grabadora de audio
+│       └── services/       #   recorderService.ts — el MediaRecorder real, a nivel de módulo
 ├── pages/                  # Wrappers de rutas
 ├── shared/                 # Componentes y utilidades
+│   ├── audio/              #   audioGraph.ts, playbackCoordinator.ts, eqStore.ts
 │   ├── components/
 │   ├── hooks/
 │   └── utils/
+├── types/                  # Ambient .d.ts (File System Access API)
 └── styles/                 # Estilos globales y temas
     └── globals.css
 ```
@@ -143,13 +151,13 @@ src/
 ## Arquitectura de Audio
 
 ```
-AudioContext (singleton)
+AudioContext (singleton, shared/audio/audioGraph.ts)
     └── masterGainNode
         └── EQ [0-9] (BiquadFilterNode)
             └── analyserNode → destination
 ```
 
-El `analyserNode` alimenta todos los visualizadores. Nuevas fuentes de audio se conectan a `masterGainNode`.
+El `analyserNode` alimenta todos los visualizadores y el espectro del ecualizador. `localEngine` (archivos locales) y `radioPlayer` (radio, emisoras con CORS) enrutan sus elementos `<audio>` a `masterGainNode`; un `playbackCoordinator` se asegura de que solo una de las dos fuentes suene a la vez. No se usa Howler.js — ambos motores trabajan directamente sobre `<audio>` nativo, lo que permite enrutar cada stream de forma independiente según soporte CORS.
 
 ## Persistencia
 
@@ -159,6 +167,21 @@ Los favoritos se guardan en IndexedDB vía Dexie:
 - `collections` — Colecciones de usuario
 - `history` — Historial de reproducción
 - `tracks` — Metadatos de tracks escaneados
+- `handles` — `FileSystemDirectoryHandle` de la última carpeta local abierta (para "Reabrir última carpeta")
+
+## Atajos de teclado
+
+Pulsa `?` dentro de la app para ver esta lista en un modal.
+
+| Tecla | Acción |
+|---|---|
+| `Espacio` | Reproducir / pausar la fuente activa (radio o local) |
+| `←` / `→` | Pista anterior / siguiente (solo local) |
+| `Shift` + `←` / `→` | Retroceder / avanzar 10 segundos (solo local) |
+| `↑` / `↓` | Subir / bajar volumen 5% |
+| `M` | Silenciar / activar sonido |
+| `E` | Abrir / cerrar el ecualizador |
+| `?` | Mostrar esta ayuda |
 
 ## Temas
 
@@ -184,7 +207,6 @@ El tema se persiste en `localStorage` y se aplica vía `data-theme` en `<html>`.
 
 - [ ] Soporte para Spotify/Apple Music
 - [ ] Letras de canciones sincronizadas
-- [ ] Ecualizador de 10 bandas UI
 - [ ] Modo fiesta con efectos visuales
 - [ ] Compartir playlists
 - [ ] Importar desde SoundCloud

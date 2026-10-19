@@ -16,6 +16,6 @@ export function truncate(str: string, max: number): string {
 export function flagEmoji(countryCode: string): string {
   if (!countryCode || countryCode.length !== 2) return '🌐';
   return String.fromCodePoint(
-    ...[...countryCode.toUpperCase()].map((c) => 0x1f1e0 + c.charCodeAt(0) - 65)
+    ...[...countryCode.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65)
   );
 }

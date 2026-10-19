@@ -1,32 +1,52 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { parseBlob } from 'music-metadata-browser';
-import { db, type LocalTrack } from '../../favorites/db/favoritesDb';
+import type { LocalTrack } from '../../favorites/db/favoritesDb';
 import { usePlayerStore } from '../store/playerStore';
-import { registerFile } from './useAudioEngine';
+import { registerFile, registerCover, releaseFiles } from '../services/localEngine';
+import { useFavoritesStore } from '../../favorites/store/favoritesStore';
+import { notify } from '../../../shared/utils/notify';
 
 const AUDIO_EXTENSIONS = ['.mp3', '.flac', '.wav', '.ogg', '.opus', '.aac', '.m4a'];
+const PARSE_CONCURRENCY = 6;
+const LAST_DIRECTORY_KEY = 'lastDirectory';
+
+interface DiscoveredFile {
+  file: File;
+  relativePath: string;
+}
+
+export interface IndexProgress {
+  done: number;
+  total: number;
+}
 
 function isAudioFile(name: string): boolean {
   return AUDIO_EXTENSIONS.some((ext) => name.toLowerCase().endsWith(ext));
 }
 
-async function readFilesFromHandle(dirHandle: FileSystemDirectoryHandle): Promise<File[]> {
-  const files: File[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  for await (const entry of (dirHandle as any).values()) {
-    if (entry.kind === 'file' && isAudioFile(entry.name)) {
-      const file = await entry.getFile();
-      files.push(file);
-    } else if (entry.kind === 'directory') {
-      const sub = await readFilesFromHandle(entry);
-      files.push(...sub);
-    }
-  }
-  return files;
+function supportsDirectoryPicker(): boolean {
+  return 'showDirectoryPicker' in window;
 }
 
-async function parseTrack(file: File): Promise<LocalTrack> {
-  const filePath = file.name + '_' + file.lastModified;
+async function readFilesFromHandle(dirHandle: FileSystemDirectoryHandle, prefix = ''): Promise<DiscoveredFile[]> {
+  const results: DiscoveredFile[] = [];
+  for await (const entry of dirHandle.values()) {
+    const path = prefix ? `${prefix}/${entry.name}` : entry.name;
+    if (entry.kind === 'file' && isAudioFile(entry.name)) {
+      const file = await entry.getFile();
+      results.push({ file, relativePath: path });
+    } else if (entry.kind === 'directory') {
+      const sub = await readFilesFromHandle(entry, path);
+      results.push(...sub);
+    }
+  }
+  return results;
+}
+
+async function parseTrack(file: File, relativePath: string): Promise<LocalTrack> {
+  // Keyed by relativePath + size + lastModified so two files with the same name
+  // in different folders never collide.
+  const filePath = `${relativePath}|${file.size}|${file.lastModified}`;
   let title = file.name.replace(/\.[^.]+$/, '');
   let artist = 'Unknown';
   let album = 'Unknown';
@@ -47,6 +67,7 @@ async function parseTrack(file: File): Promise<LocalTrack> {
     if (pic) {
       const blob = new Blob([new Uint8Array(pic.data).buffer as ArrayBuffer], { type: pic.format });
       coverUrl = URL.createObjectURL(blob);
+      registerCover(filePath, coverUrl);
     }
   } catch {
     // Fall back to filename-derived values — already set above
@@ -73,6 +94,7 @@ async function parseTrack(file: File): Promise<LocalTrack> {
 
   return {
     filePath,
+    relativePath,
     title,
     artist,
     album,
@@ -85,69 +107,138 @@ async function parseTrack(file: File): Promise<LocalTrack> {
   };
 }
 
-export function useLocalFiles() {
-  const [isIndexing, setIsIndexing] = useState(false);
-  const { setQueue } = usePlayerStore();
+/** Parses files with a bounded worker pool so huge folders don't hang the tab. */
+async function parseWithConcurrency(
+  files: DiscoveredFile[],
+  onProgress: (progress: IndexProgress) => void,
+): Promise<LocalTrack[]> {
+  const results: LocalTrack[] = new Array(files.length);
+  let nextIndex = 0;
+  let done = 0;
 
-  const openDirectory = useCallback(async () => {
-    setIsIndexing(true);
-    try {
-      // Usar SOLO el explorador de carpetas nativo del navegador
-      if (!('showDirectoryPicker' in window)) {
-        alert('Tu navegador no soporta la selección de carpetas. Usa Chrome, Edge o Firefox.');
-        setIsIndexing(false);
-        return;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const dirHandle = await (window as any).showDirectoryPicker();
-      const files = await readFilesFromHandle(dirHandle);
-
-      if (files.length === 0) {
-        alert('No se encontraron archivos de audio en esta carpeta.');
-        setIsIndexing(false);
-        return;
-      }
-
-      const tracks = await Promise.all(files.map(parseTrack));
-
-      for (const track of tracks) {
-        const existing = await db.tracks.where('filePath').equals(track.filePath).first();
-        if (!existing) await db.tracks.add(track);
-      }
-
-      // Solo cargar la cola, NO iniciar reproducción automáticamente
-      // El usuario debe pulsar play manualmente para no interrumpir radio
-      setQueue(tracks, 0);
-    } catch (err) {
-      if ((err as Error).name === 'AbortError') {
-        // Usuario canceló - no hacer nada
-      } else {
-        console.error('Error al abrir carpeta:', err);
-        alert('Error al leer la carpeta: ' + (err as Error).message);
-      }
-    } finally {
-      setIsIndexing(false);
+  async function worker(): Promise<void> {
+    for (;;) {
+      const i = nextIndex++;
+      if (i >= files.length) return;
+      results[i] = await parseTrack(files[i].file, files[i].relativePath);
+      done++;
+      onProgress({ done, total: files.length });
     }
-  }, [setQueue]);
+  }
 
-  const openFiles = useCallback(async () => {
+  const workerCount = Math.min(PARSE_CONCURRENCY, files.length);
+  await Promise.all(Array.from({ length: workerCount }, worker));
+  return results.sort((a, b) => (a.relativePath ?? '').localeCompare(b.relativePath ?? ''));
+}
+
+function pickFilesViaInput(directory: boolean): Promise<DiscoveredFile[]> {
+  return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.multiple = true;
-    input.accept = AUDIO_EXTENSIONS.join(',');
-    input.onchange = async () => {
-      setIsIndexing(true);
-      try {
-        const files = Array.from(input.files ?? []);
-        const tracks = await Promise.all(files.map(parseTrack));
-        setQueue(tracks);
-      } finally {
-        setIsIndexing(false);
-      }
+    if (directory) {
+      input.webkitdirectory = true;
+    } else {
+      input.accept = AUDIO_EXTENSIONS.join(',');
+    }
+    input.onchange = () => {
+      const files = Array.from(input.files ?? []).filter((f) => isAudioFile(f.name));
+      resolve(files.map((file) => ({
+        file,
+        relativePath: file.webkitRelativePath || file.name,
+      })));
     };
     input.click();
-  }, [setQueue]);
+  });
+}
 
-  return { openDirectory, openFiles, isIndexing };
+export function useLocalFiles() {
+  const [isIndexing, setIsIndexing] = useState(false);
+  const [indexProgress, setIndexProgress] = useState<IndexProgress | null>(null);
+  const [hasSavedDirHandle, setHasSavedDirHandle] = useState(false);
+  const setQueue = usePlayerStore((s) => s.setQueue);
+  const appendToQueue = usePlayerStore((s) => s.appendToQueue);
+
+  useEffect(() => {
+    if (!supportsDirectoryPicker()) return;
+    void useFavoritesStore.getState().getDirHandle(LAST_DIRECTORY_KEY).then((handle) => {
+      setHasSavedDirHandle(!!handle);
+    });
+  }, []);
+
+  const indexFiles = useCallback(async (discovered: DiscoveredFile[], mode: 'replace' | 'append') => {
+    if (discovered.length === 0) {
+      notify('No se encontraron archivos de audio.', 'warning');
+      return;
+    }
+    setIsIndexing(true);
+    setIndexProgress({ done: 0, total: discovered.length });
+    try {
+      const tracks = await parseWithConcurrency(discovered, setIndexProgress);
+      if (mode === 'replace') {
+        setQueue(tracks, 0);
+        releaseFiles(new Set(tracks.map((t) => t.filePath)));
+      } else {
+        appendToQueue(tracks);
+      }
+    } finally {
+      setIsIndexing(false);
+      setIndexProgress(null);
+    }
+  }, [setQueue, appendToQueue]);
+
+  const openDirectory = useCallback(async () => {
+    if (!supportsDirectoryPicker()) {
+      const discovered = await pickFilesViaInput(true);
+      await indexFiles(discovered, 'replace');
+      return;
+    }
+    try {
+      const dirHandle = await window.showDirectoryPicker();
+      const discovered = await readFilesFromHandle(dirHandle);
+      await indexFiles(discovered, 'replace');
+      void useFavoritesStore.getState().saveDirHandle(LAST_DIRECTORY_KEY, dirHandle);
+      setHasSavedDirHandle(true);
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        notify('Error al leer la carpeta: ' + (err as Error).message, 'error');
+      }
+    }
+  }, [indexFiles]);
+
+  const reopenLastDirectory = useCallback(async () => {
+    const handle = await useFavoritesStore.getState().getDirHandle(LAST_DIRECTORY_KEY);
+    if (!handle) return;
+    try {
+      const permission = await handle.requestPermission({ mode: 'read' });
+      if (permission !== 'granted') {
+        notify('Permiso denegado para reabrir la carpeta.', 'warning');
+        return;
+      }
+      const discovered = await readFilesFromHandle(handle);
+      await indexFiles(discovered, 'replace');
+    } catch (err) {
+      notify('No se pudo reabrir la carpeta: ' + (err as Error).message, 'error');
+    }
+  }, [indexFiles]);
+
+  const openFiles = useCallback(async () => {
+    const discovered = await pickFilesViaInput(false);
+    await indexFiles(discovered, 'replace');
+  }, [indexFiles]);
+
+  const appendFiles = useCallback(async () => {
+    const discovered = await pickFilesViaInput(false);
+    await indexFiles(discovered, 'append');
+  }, [indexFiles]);
+
+  return {
+    openDirectory,
+    openFiles,
+    appendFiles,
+    reopenLastDirectory,
+    isIndexing,
+    indexProgress,
+    hasSavedDirHandle: hasSavedDirHandle && supportsDirectoryPicker(),
+  };
 }

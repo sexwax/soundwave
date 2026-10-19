@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { useTheme } from '../../../app/providers/ThemeProvider';
+import { useTheme } from '../../../app/providers/useTheme';
+import { useRecorderStore } from '../../../modules/recorder/store/recorderStore';
 import { useState } from 'react';
 
 const NAV_ITEMS = [
@@ -11,6 +12,7 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const { theme, setTheme } = useTheme();
+  const isRecording = useRecorderStore((s) => s.status === 'recording');
   const [isOpen, setIsOpen] = useState(false);
   const themes = ['dark', 'light', 'neon'] as const;
 
@@ -103,6 +105,17 @@ export function Sidebar() {
           >
             <span>{item.icon}</span>
             <span>{item.label}</span>
+            {item.path === '/recorder' && isRecording && (
+              <span
+                className="pulse-rec"
+                aria-label="Grabando"
+                style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: 'var(--accent-danger)',
+                  marginLeft: 'auto',
+                }}
+              />
+            )}
           </NavLink>
         ))}
       </nav>

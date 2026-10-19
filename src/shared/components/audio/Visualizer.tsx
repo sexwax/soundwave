@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState } from 'react';
-import { useAudioContext } from '../../../app/providers/AudioProvider';
+import { useRef, useEffect } from 'react';
+import { useAudioContext } from '../../../app/providers/useAudioContext';
 
 type VisMode = 'bars' | 'wave' | 'circular';
 
@@ -8,6 +8,11 @@ interface VisualizerProps {
   height?: number;
   mode?: VisMode;
   compact?: boolean;
+}
+
+function themeColor(name: string, fallback: string): string {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
 }
 
 export function Visualizer({ width = 400, height = 80, mode = 'bars', compact = false }: VisualizerProps) {
@@ -22,25 +27,34 @@ export function Visualizer({ width = 400, height = 80, mode = 'bars', compact = 
     const bufferLength = analyserNode.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
-    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim() || '#00e5ff';
-    const secondary = getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary').trim() || '#7c3aed';
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.scale(dpr, dpr);
 
     const draw = () => {
       rafRef.current = requestAnimationFrame(draw);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, width, height);
+
+      // One getComputedStyle read per frame (not per bar) so a theme switch
+      // while the visualizer is running is reflected on the next tick.
+      const accent = themeColor('--accent-primary', '#00e5ff');
+      const secondary = themeColor('--accent-secondary', '#7c3aed');
 
       if (mode === 'bars') {
         analyserNode.getByteFrequencyData(dataArray);
         const barCount = compact ? 32 : 64;
-        const barWidth = canvas.width / barCount;
+        const barWidth = width / barCount;
         for (let i = 0; i < barCount; i++) {
           const val = dataArray[Math.floor((i * bufferLength) / barCount)];
-          const barHeight = (val / 255) * canvas.height;
-          const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+          const barHeight = (val / 255) * height;
+          const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
           gradient.addColorStop(0, accent);
           gradient.addColorStop(1, secondary);
           ctx.fillStyle = gradient;
-          ctx.fillRect(i * barWidth + 1, canvas.height - barHeight, barWidth - 2, barHeight);
+          ctx.fillRect(i * barWidth + 1, height - barHeight, barWidth - 2, barHeight);
         }
       } else if (mode === 'wave') {
         analyserNode.getByteTimeDomainData(dataArray);
@@ -48,15 +62,16 @@ export function Visualizer({ width = 400, height = 80, mode = 'bars', compact = 
         ctx.strokeStyle = accent;
         ctx.lineWidth = 1.5;
         for (let i = 0; i < bufferLength; i++) {
-          const x = (i / bufferLength) * canvas.width;
-          const y = (dataArray[i] / 128) * (canvas.height / 2);
-          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+          const x = (i / bufferLength) * width;
+          const y = (dataArray[i] / 128) * (height / 2);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
         }
         ctx.stroke();
       } else if (mode === 'circular') {
         analyserNode.getByteFrequencyData(dataArray);
-        const cx = canvas.width / 2;
-        const cy = canvas.height / 2;
+        const cx = width / 2;
+        const cy = height / 2;
         const r = Math.min(cx, cy) - 10;
         for (let i = 0; i < 128; i++) {
           const angle = (i / 128) * Math.PI * 2;
@@ -66,7 +81,7 @@ export function Visualizer({ width = 400, height = 80, mode = 'bars', compact = 
           const x2 = cx + Math.cos(angle) * (r + val);
           const y2 = cy + Math.sin(angle) * (r + val);
           ctx.beginPath();
-          ctx.strokeStyle = accent;
+          ctx.strokeStyle = i % 2 === 0 ? accent : secondary;
           ctx.lineWidth = 1.5;
           ctx.moveTo(x1, y1);
           ctx.lineTo(x2, y2);
@@ -77,14 +92,12 @@ export function Visualizer({ width = 400, height = 80, mode = 'bars', compact = 
 
     draw();
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [analyserNode, mode, compact]);
+  }, [analyserNode, mode, compact, width, height]);
 
   return (
     <canvas
       ref={canvasRef}
-      width={width}
-      height={height}
-      style={{ display: 'block', borderRadius: 4 }}
+      style={{ display: 'block', borderRadius: 4, width, height }}
       aria-hidden="true"
     />
   );
