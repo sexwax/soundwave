@@ -1,4 +1,4 @@
-# Soundwave
+# SoundWave
 
 🇬🇧 **[Read in English → README.md](README.md)**
 
@@ -6,7 +6,7 @@ Reproductor de música y radio por internet moderno y minimalista.
 
 **🎧 Demo en producción: [soundwave-woad.vercel.app](https://soundwave-woad.vercel.app)**
 
-![Soundwave](https://img.shields.io/badge/React-19-black?logo=react&style=flat)
+![SoundWave](https://img.shields.io/badge/React-19-black?logo=react&style=flat)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&style=flat)
 ![Vite](https://img.shields.io/badge/Vite-8-purple?logo=vite&style=flat)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat)
