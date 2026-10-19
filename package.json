@@ -21,7 +21,7 @@
     "screenshots": "node scripts/screenshots.mjs"
   },
   "dependencies": {
-    "@tanstack/react-virtual": "^3.14.20",
+    "@tanstack/react-virtual": "^3.14.21",
     "clsx": "^2.1.1",
     "dexie": "^4.4.6",
     "dexie-react-hooks": "^4.4.0",
@@ -47,7 +47,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "@vitest/ui": "^5.0.5",
-    "eslint": "^10.12.0",
+    "eslint": "^10.13.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.13.0",
