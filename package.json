@@ -17,7 +17,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "screenshots": "node scripts/screenshots.mjs"
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.13.23",
@@ -52,6 +53,7 @@
     "globals": "^17.4.0",
     "jsdom": "^29.0.1",
     "prettier": "^3.8.1",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4.2.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
