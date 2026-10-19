@@ -29,14 +29,37 @@ function getAllowedOrigins(env) {
     .filter(Boolean);
 }
 
+/**
+ * Plain <audio> requests without `crossOrigin` (SoundWave's `plainEl` in
+ * radioPlayer) are "no-CORS": the browser never sends an `Origin` header for
+ * them, so checking `Origin` alone would 403 every one of them. Fall back to
+ * the `Referer`'s origin in that case — still a real (if spoofable) signal
+ * of where the request came from, which is all this allow-list needs.
+ */
+function resolveClientOrigin(request) {
+  const originHeader = request.headers.get('Origin');
+  if (originHeader) return originHeader;
+
+  const referer = request.headers.get('Referer');
+  if (!referer) return null;
+  try {
+    return new URL(referer).origin;
+  } catch {
+    return null;
+  }
+}
+
 function isOriginAllowed(origin, env) {
   return !!origin && getAllowedOrigins(env).includes(origin);
 }
 
-function corsHeaders(origin) {
+/** Only a request that actually sent `Origin` needs ACAO/Vary back — a no-CORS request reads neither. */
+function corsHeaders(originHeader) {
   const headers = new Headers();
-  headers.set('Access-Control-Allow-Origin', origin);
-  headers.set('Vary', 'Origin');
+  if (originHeader) {
+    headers.set('Access-Control-Allow-Origin', originHeader);
+    headers.set('Vary', 'Origin');
+  }
   return headers;
 }
 
@@ -53,12 +76,13 @@ function isPrivateHost(hostname) {
 
 export default {
   async fetch(request, env) {
-    const origin = request.headers.get('Origin');
-    const allowed = isOriginAllowed(origin, env);
+    const originHeader = request.headers.get('Origin');
+    const effectiveOrigin = resolveClientOrigin(request);
+    const allowed = isOriginAllowed(effectiveOrigin, env);
 
     if (request.method === 'OPTIONS') {
       if (!allowed) return new Response(null, { status: 403 });
-      const headers = corsHeaders(origin);
+      const headers = corsHeaders(originHeader);
       headers.set('Access-Control-Allow-Methods', 'GET, HEAD');
       headers.set('Access-Control-Allow-Headers', 'Content-Type');
       return new Response(null, { status: 204, headers });
@@ -78,22 +102,22 @@ export default {
     const { searchParams } = new URL(request.url);
     const target = searchParams.get('url');
     if (!target) {
-      return new Response('Missing "url" query parameter', { status: 400, headers: corsHeaders(origin) });
+      return new Response('Missing "url" query parameter', { status: 400, headers: corsHeaders(originHeader) });
     }
 
     let targetUrl;
     try {
       targetUrl = new URL(target);
     } catch {
-      return new Response('Invalid "url" parameter', { status: 400, headers: corsHeaders(origin) });
+      return new Response('Invalid "url" parameter', { status: 400, headers: corsHeaders(originHeader) });
     }
 
     if (targetUrl.protocol !== 'http:' && targetUrl.protocol !== 'https:') {
-      return new Response('Only http/https URLs are allowed', { status: 400, headers: corsHeaders(origin) });
+      return new Response('Only http/https URLs are allowed', { status: 400, headers: corsHeaders(originHeader) });
     }
 
     if (isPrivateHost(targetUrl.hostname)) {
-      return new Response('Target host not allowed', { status: 400, headers: corsHeaders(origin) });
+      return new Response('Target host not allowed', { status: 400, headers: corsHeaders(originHeader) });
     }
 
     let upstream;
@@ -104,19 +128,21 @@ export default {
         cf: { cacheTtl: 0, cacheEverything: false },
       });
     } catch {
-      return new Response('Could not reach the target URL', { status: 502, headers: corsHeaders(origin) });
+      return new Response('Could not reach the target URL', { status: 502, headers: corsHeaders(originHeader) });
     }
 
     const contentType = (upstream.headers.get('Content-Type') || '').toLowerCase();
     const contentTypeAllowed = ALLOWED_CONTENT_TYPE_PREFIXES.some((prefix) => contentType.startsWith(prefix));
     if (!contentTypeAllowed) {
-      return new Response('Unsupported content type', { status: 415, headers: corsHeaders(origin) });
+      return new Response('Unsupported content type', { status: 415, headers: corsHeaders(originHeader) });
     }
 
     const headers = new Headers(upstream.headers);
     headers.delete('Set-Cookie');
-    headers.set('Access-Control-Allow-Origin', origin);
-    headers.set('Vary', 'Origin');
+    if (originHeader) {
+      headers.set('Access-Control-Allow-Origin', originHeader);
+      headers.set('Vary', 'Origin');
+    }
     headers.set('Cache-Control', 'no-store');
 
     return new Response(upstream.body, {
